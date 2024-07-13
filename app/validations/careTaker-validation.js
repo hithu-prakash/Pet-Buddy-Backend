@@ -40,7 +40,7 @@ const careTakerValidation={
         },
         trim:true
     },
-    Proof:{
+    proof:{
         exists:{
             errorMessage: 'proof is required'
         },

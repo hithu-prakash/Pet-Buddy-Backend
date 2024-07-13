@@ -3,14 +3,16 @@ const {Schema,model}= mongoose
 
 const parentSchema = new mongoose.Schema({
     userId: {
-        type: schema.types.objectId,
-        ref:"user"
+        type: Schema.Types.ObjectId,
+        ref:"User"
     },
-     parentPhoto: { type: String, required: true },
-     address: { type: String, required: true },
-     Proof:{ type: String, required: true }
+    username: String,
+    phoneNumber:String,
+     parentPhoto:String,
+     address:String, 
+     proof:String, 
  }, { timestamps: true } )
 
- const Parent = model('parent',parentSchema)
+ const Parent = model('Parent',parentSchema)
 
 module.exports=Parent 

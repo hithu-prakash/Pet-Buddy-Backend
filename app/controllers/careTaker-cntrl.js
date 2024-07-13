@@ -16,7 +16,7 @@ careTakerCntrl.create = async (req, res) => {
     /// console.log(body)
 
     try {
-        const { careTakerName, address, phoneNumber, proof, bio, serviceCharge } = req.body
+        const { careTakerName, address, phoneNumber, proof, bio, serviceCharge} = req.body
         const newCareTaker = new CareTaker({
             user: req.user.id,
             careTakerName,
@@ -118,7 +118,7 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
     const body = req.body
     try {
         const careTakerId = req.params.id
-        const response = await CareTaker.findById(careTakerId).populate('userId','email')
+        const response = await CareTaker.findById(careTakerId).populate('userId','email','phoneNumber')
         res.status(200).json(response)
 
     } catch (err) {
