@@ -6,7 +6,7 @@ cloudinary.config({
     api_secret:process.env.CLOUD_API_SECRET
 
 })
-const uploadToCloudinary = (file, options) => {
+const uploadToCloudinary = (fileBuffer, options) => {
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream( //object
         options,
@@ -18,9 +18,34 @@ const uploadToCloudinary = (file, options) => {
             resolve(result);
           }
         }
-      ).end(file)
+      ).end(fileBuffer)
     });
   };
 
+  module.exports=uploadToCloudinary
 
-module.exports=uploadToCloudinary
+// const uploader = (file, folder) => {
+//   return new Promise((resolve, reject) => {
+//     cloudinary.uploader.upload(
+//       file,
+//       {
+//         resource_type: "auto", // Corrected from resource: auto
+//         folder: folder
+//       },
+//       (error, result) => {
+//         if (error) reject(error);
+//         else resolve(result.url);
+//       }
+//     );
+//   });
+// };
+
+
+// // const storage = new CloudinaryStorage({
+// //   cloudinary: cloudinary,
+// //   params: {
+// //       folder: 'profile-photos', // Folder name in Cloudinary
+// //       allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'] // Allowed file formats
+// //   }
+// // });
+

@@ -13,11 +13,14 @@ const {
     userResetPassword} = require('./app/validations/user-validation')
 const {careTakerValidation,careTakerUpdateValidation} = require('./app/validations/careTaker-validation')
 const {petParentValidation,petParentUpdateValidation}=require('./app/validations/petParent-validation')
+const {petValidation, petUpdateValidation}=require('./app/validations/pet-validation')
 
 
 const userCntrl = require('./app/controllers/user-cntrl')
 const careTakerCntrl=require('./app/controllers/careTaker-cntrl')
 const petParentCntrl=require('./app/controllers/petParent-cntrl')
+const petCntrl=require('./app/controllers/pet-cntrl')
+const bookingCntrl =require('./app/controllers/booking-cntrl')
 
 const authenticateUser = require('./app/middleware/authenticateUser')
 const authorizeUser = require('./app/middleware/authorizeUser')
@@ -29,6 +32,7 @@ const  fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const helmet=require('helmet')
+
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms' /* 'common '*/, {
     stream: fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
@@ -51,21 +55,32 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
 app.delete('/userId/remove/:id',authenticateUser,userCntrl.Remove)
 
 //careTaker CRUD
-
-app.post('/caretaker/create',authenticateUser,authorizeUser(['careTaker']),checkSchema(careTakerValidation),upload.single('photo'),careTakerCntrl.create)
+            //upload.single('proof')
+app.post('/caretaker/create',upload.single('proof'),authenticateUser,authorizeUser(['careTaker']),checkSchema(careTakerValidation),careTakerCntrl.create)
 app.get('/caretaker/showallcareTaker',careTakerCntrl.showallcareTaker)
 app.get('/careTaker/singlecareTaker/:id',authenticateUser,careTakerCntrl.singlecareTaker)
 app.put('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),checkSchema(careTakerUpdateValidation),careTakerCntrl.update)
 app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.delete)
-app.post('/careTaker/proof',upload.single('proof'),careTakerCntrl.uploads)
+app.post('/careTaker/proof',upload.single('proof'),careTakerCntrl.create)
 
 //petParent CRUD
 
-app.post('/petParent/create',authenticateUser,authorizeUser(['petParent']),petParentCntrl.create)
+app.post('/petParent/create',authenticateUser,authorizeUser(['petParent']),checkSchema(petParentValidation),petParentCntrl.create)
 app.get('/petParent/showall',petParentCntrl.showall)
 app.get('/petParent/oneParent/:id',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.showone)
-app.put('/petParent/update/:id',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.update)
+app.put('/petParent/update/:id',authenticateUser,authorizeUser(['admin','petParent']),checkSchema(petParentUpdateValidation),petParentCntrl.update)
 app.delete('/petParent/delete/:id',petParentCntrl.delete)
+
+//pet CRUD
+app.post('/pet/create',authenticateUser,authorizeUser(['petParent']),checkSchema(petValidation),petCntrl.create) //checkSchema(petValidation)
+app.get('/pet/showAll',petCntrl.showAll)
+app.get('/pet/singlePet/:id',authenticateUser,petCntrl.singelPet)
+app.put('/pet/update/:id',authenticateUser,authorizeUser(['petParent']),checkSchema(petUpdateValidation),petCntrl.update)
+app.delete('/pet/delete/:id',petCntrl.delete)
+
+//booking CRUD
+app.post('/booking/create/:careTakerid',authenticateUser,authorizeUser(['petParent']),bookingCntrl.create)
+app.get('/booking/allbooking',bookingCntrl.allBookings)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)

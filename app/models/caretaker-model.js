@@ -14,14 +14,14 @@ const careTakerSchema = new mongoose.Schema({
     type:Boolean,
     default:false
  }, 
- careTakerName: String,
- phoneNumber:Number,
+ businessName: String,
+//  phoneNumber:Number,
  address: String, 
  photo:String, 
  proof:String, 
  bio: String,
  serviceCharges : [ {
-     Specialityname: String, 
+     specialityName: String, 
      amount: Number,
       time: Date } ]
 }, { timestamps: true })

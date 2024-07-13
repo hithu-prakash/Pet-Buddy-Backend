@@ -8,7 +8,7 @@ const bookingSchema = new Schema({
     },
     caretakerId:{
     type: Schema.Types.ObjectId, //careTakerId
-       ref:"User"
+       ref:"careTaker"
    },
    petId:{
     type: Schema.Types.ObjectId,

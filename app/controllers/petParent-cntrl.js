@@ -1,4 +1,4 @@
-const Parent = require('../models/parent-model')
+const Parent = require('../models/petparent-model')
 const { validationResult } = require('express-validator')
 
 const petParentCntrl={}

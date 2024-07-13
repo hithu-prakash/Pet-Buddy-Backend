@@ -9,38 +9,95 @@ const careTakerCntrl = {}
 
 careTakerCntrl.create = async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty) {
+    if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() })
     }
     //const body=req.body
     /// console.log(body)
 
+    //const { careTakerName, address, phoneNumber, bio, serviceCharge } = req.body;
+
     try {
-        const { careTakerName, address, phoneNumber, proof, bio, serviceCharge} = req.body
+        const body=req.body
+        const careTaker=new CareTaker(body)
+        careTaker.userId=req.user.id
+        const { businessName,address, bio, serviceCharge } = req.body
         const newCareTaker = new CareTaker({
             user: req.user.id,
-            careTakerName,
-            phoneNumber,
+            businessName,
             address,
-            proof,
             bio,
             serviceCharge
-        })
+        });
+
+        // Handle profile photo upload
         if (req.file) {
-            const options = {
-                folder: 'Pet-Buddy-CareTaker/ProfilePhoto',
+            console.log('File received:', req.file);
+            const body = _.pick(req.body, ['proof'])
+            const photoOptions = {
+                folder: 'Pet-Buddy-CareTaker/photo',
                 quality: 'auto',
-            }
-            const result = await uploadToCloudinary(req.file.buffer, options)
-            console.log(result.secure_url)
-            newCareTaker.photo = result.secure_url
+            };
+
+            // Upload profile photo to Cloudinary
+            const photoResult = await uploadToCloudinary(req.file.buffer, photoOptions);
+            console.log('Upload result:', photoResult);
+            console.log('Uploaded photo:', photoResult.secure_url);
+
+            // Assign Cloudinary URL to newCareTaker.photo field
+            newCareTaker.photo = photoResult.secure_url;
         }
-        await newCareTaker.save()
-        return res.status(200).json(newCareTaker)
+
+        //Handle Aadhar proof upload
+        if (req.files && req.files.proof) {
+            console.log('File received:', req.files)
+            const proofOptions = {
+                folder: 'Pet-Buddy-CareTaker/proof',
+                quality: 'auto',
+            };
+
+            // Upload Aadhar proof to Cloudinary
+            const proofResult = await uploadToCloudinary(req.files.proof[0].buffer, proofOptions);
+            console.log('Uploaded Aadhar proof:', proofResult.secure_url);
+
+            
+            newCareTaker.proof = proofResult.secure_url;
+        }
+
+        await newCareTaker.save();
+        console.log(newCareTaker)
+        return res.status(200).json(newCareTaker);
     } catch (err) {
-        console.log(err.message)
-        res.status(500).json('something went wrong')
+        console.error('Error creating caretaker:', err.message);
+        res.status(500).json({ error: 'Something went wrong' });
     }
+}
+    // try {
+    //     const { careTakerName, address, phoneNumber, proof, bio, serviceCharge} = req.body
+    //     const newCareTaker = new CareTaker({
+    //         user: req.user.id,
+    //         careTakerName,
+    //         phoneNumber,
+    //         address,
+    //         proof,
+    //         bio,
+    //         serviceCharge
+    //     })
+    //     if (req.file) {
+    //         const options = {
+    //             folder: 'Pet-Buddy-CareTaker/ProfilePhoto',
+    //             quality: 'auto',
+    //         }
+    //         const result = await uploadToCloudinary(req.file.buffer, options)
+    //         console.log(result.secure_url)
+    //         newCareTaker.photo = result.secure_url
+    //     }
+    //     await newCareTaker.save()
+    //     return res.status(200).json(newCareTaker)
+    // } catch (err) {
+    //     console.log(err.message)
+    //     res.status(500).json('something went wrong')
+    // }
     // try{
     //     const caretaker = new careTaker(body)
     //     caretaker.userId=req.user.id
@@ -66,7 +123,7 @@ careTakerCntrl.create = async (req, res) => {
     //     console.error(err.message);
     //     res.status(500).json({ errors: "Something went wrong" });
     // }
-}
+
 
 careTakerCntrl.uploads = async (req, res) => {
     try {
@@ -96,12 +153,12 @@ careTakerCntrl.uploads = async (req, res) => {
 
 careTakerCntrl.showallcareTaker = async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty) {
+    if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() })
     }
     const body = req.body
     try {
-        const caretakers = await CareTaker.find().populate("userId",'email')
+        const caretakers = await CareTaker.find().populate("userId",['email', 'phoneNumber'])
 
         return res.status(200).json(caretakers)
     } catch (err) {
@@ -129,7 +186,7 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
 
 careTakerCntrl.update = async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty) {
+    if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() })
     }
     const body = req.body
