@@ -10,10 +10,12 @@ petCntrl.create=async(req,res)=>{
     }
     try{
         const body= req.body
+        body.userId=req.user.id
         const pet = new Pet(body)
-        pet.userId=req.user.userId
+        //pet.userId=req.user.userId
         await pet.save()
-        return res.json(pet)
+        const populateBooking = await Pet.findById(pet._id).populate('userId','username email phoneNumber')
+        return res.json(populateBooking)
     } catch(err){
         console.log(err.message)
         res.status(500).json("Internal error")
@@ -80,6 +82,7 @@ petCntrl.delete=async(req,res)=>{
         res.status(500).json({ errors: 'something went wrong' })
     }
 }
+
 
 
 module.exports=petCntrl

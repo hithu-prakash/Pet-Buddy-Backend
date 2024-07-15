@@ -81,6 +81,10 @@ app.delete('/pet/delete/:id',petCntrl.delete)
 //booking CRUD
 app.post('/booking/create/:careTakerid',authenticateUser,authorizeUser(['petParent']),bookingCntrl.create)
 app.get('/booking/allbooking',bookingCntrl.allBookings)
+app.get('/booking/singlebooking/:id',authenticateUser,bookingCntrl.singleBooking)
+app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)
+app.put('/booking/careTaker/:careTakerId/Booking/:bookingId',authenticateUser,authorizeUser(['petParent']),bookingCntrl.acceptedByCaretaker)
+app.delete('/booking/delete/:id',bookingCntrl.delete)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)

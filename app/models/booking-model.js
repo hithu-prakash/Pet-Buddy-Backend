@@ -8,11 +8,15 @@ const bookingSchema = new Schema({
     },
     caretakerId:{
     type: Schema.Types.ObjectId, //careTakerId
-       ref:"careTaker"
+       ref:"CareTaker"
    },
    petId:{
     type: Schema.Types.ObjectId,
     ref:"Pet"
+   },
+   parentId:{
+    type:Schema.Types.ObjectId,
+    ref:"Parent"
    },
    category:String,
    date:{
