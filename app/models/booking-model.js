@@ -20,26 +20,26 @@ const bookingSchema = new Schema({
    },
    category:String,
    date:{
-    startTime: Date,
-    endTime: Date
+    // startTime: Date,
+    // endTime: Date
     },
     status:{
         type:String,
-        default:false
+        default:"pending"
     },
     totalAmount: Number,
-      isCheckedIn: {
-        type: String,
-        default: false,
-      },
-       isCheckedOut: {
-        type: String,
-        default: false,
-      },
-      isDeleted: {
-        type: String,
-        default: "false",
-      },
+      // isCheckedIn: {
+      //   type: String,
+      //   default: false,
+      // },
+      //  isCheckedOut: {
+      //   type: String,
+      //   default: false,
+      // },
+      // isDeleted: {
+      //   type: String,
+      //   default: "pending",
+      // },
       Accepted:{
          type:Boolean,
           default:false

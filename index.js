@@ -21,6 +21,7 @@ const careTakerCntrl=require('./app/controllers/careTaker-cntrl')
 const petParentCntrl=require('./app/controllers/petParent-cntrl')
 const petCntrl=require('./app/controllers/pet-cntrl')
 const bookingCntrl =require('./app/controllers/booking-cntrl')
+const reviewCntrl=require('./app/controllers/review-cntrl')
 
 const authenticateUser = require('./app/middleware/authenticateUser')
 const authorizeUser = require('./app/middleware/authorizeUser')
@@ -55,36 +56,44 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
 app.delete('/userId/remove/:id',authenticateUser,userCntrl.Remove)
 
 //careTaker CRUD
-            //upload.single('proof')
-app.post('/caretaker/create',upload.single('proof'),authenticateUser,authorizeUser(['careTaker']),checkSchema(careTakerValidation),careTakerCntrl.create)
+            //upload.single('proof')                                                              //checkSchema(careTakerValidation)
+app.post('/caretaker/create',upload.single('photo'),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
 app.get('/caretaker/showallcareTaker',careTakerCntrl.showallcareTaker)
 app.get('/careTaker/singlecareTaker/:id',authenticateUser,careTakerCntrl.singlecareTaker)
-app.put('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),checkSchema(careTakerUpdateValidation),careTakerCntrl.update)
+app.put('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
 app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.delete)
-app.post('/careTaker/proof',upload.single('proof'),careTakerCntrl.create)
+app.post('/careTaker/proof/:id',upload.single('proof'),careTakerCntrl.uploads)
 
 //petParent CRUD
 
-app.post('/petParent/create',authenticateUser,authorizeUser(['petParent']),checkSchema(petParentValidation),petParentCntrl.create)
+app.post('/petParent/create',upload.single('photo'),authenticateUser,authorizeUser(['petParent']),checkSchema(petParentValidation),petParentCntrl.create)
+app.post('/petParent/proof/:id',upload.single('proof'),petParentCntrl.uploads)
 app.get('/petParent/showall',petParentCntrl.showall)
 app.get('/petParent/oneParent/:id',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.showone)
 app.put('/petParent/update/:id',authenticateUser,authorizeUser(['admin','petParent']),checkSchema(petParentUpdateValidation),petParentCntrl.update)
 app.delete('/petParent/delete/:id',petParentCntrl.delete)
 
 //pet CRUD
-app.post('/pet/create',authenticateUser,authorizeUser(['petParent']),checkSchema(petValidation),petCntrl.create) //checkSchema(petValidation)
+app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),checkSchema(petValidation),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
 app.get('/pet/singlePet/:id',authenticateUser,petCntrl.singelPet)
 app.put('/pet/update/:id',authenticateUser,authorizeUser(['petParent']),checkSchema(petUpdateValidation),petCntrl.update)
 app.delete('/pet/delete/:id',petCntrl.delete)
 
 //booking CRUD
-app.post('/booking/create/:careTakerid',authenticateUser,authorizeUser(['petParent']),bookingCntrl.create)
+app.post('/booking/create/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.create)
 app.get('/booking/allbooking',bookingCntrl.allBookings)
 app.get('/booking/singlebooking/:id',authenticateUser,bookingCntrl.singleBooking)
 app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)
 app.put('/booking/careTaker/:careTakerId/Booking/:bookingId',authenticateUser,authorizeUser(['petParent']),bookingCntrl.acceptedByCaretaker)
 app.delete('/booking/delete/:id',bookingCntrl.delete)
+
+//review CRUD
+app.post('/review/create',authenticateUser,authorizeUser(['petParent']),reviewCntrl.create)
+app.get('/all/review',reviewCntrl.getAll)
+app.get('/single/review',reviewCntrl.getByCaretaker)
+app.put('/update/review',authenticateUser,authorizeUser(['petParent']),reviewCntrl.update)
+app.delete('/delete/review',reviewCntrl.delete)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)

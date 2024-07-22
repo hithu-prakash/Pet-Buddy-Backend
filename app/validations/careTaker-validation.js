@@ -13,12 +13,12 @@ const careTakerValidation={
             }
         }
     },
-    careTakerName :{
+    businessName :{
         exists: {
-            errorMessage: 'careTakerName is required'
+            errorMessage: 'businessName is required'
         },
         notEmpty: {
-            errorMessage: 'careTakerName cannot be blank'
+            errorMessage: 'businessName cannot be blank'
         },
         trim:true
     },

@@ -12,15 +12,11 @@ careTakerCntrl.create = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() })
     }
-    //const body=req.body
-    /// console.log(body)
-
-    //const { careTakerName, address, phoneNumber, bio, serviceCharge } = req.body;
-
+   
     try {
         const body=req.body
         const careTaker=new CareTaker(body)
-        careTaker.userId=req.user.id
+       careTaker.userId=req.user.id
         const { businessName,address, bio, serviceCharge } = req.body
         const newCareTaker = new CareTaker({
             user: req.user.id,
@@ -49,24 +45,25 @@ careTakerCntrl.create = async (req, res) => {
         }
 
         //Handle Aadhar proof upload
-        if (req.files && req.files.proof) {
-            console.log('File received:', req.files)
-            const proofOptions = {
-                folder: 'Pet-Buddy-CareTaker/proof',
-                quality: 'auto',
-            };
+        // if (req.files && req.files.proof) {
+        //     console.log('File received:', req.files)
+        //     const proofOptions = {
+        //         folder: 'Pet-Buddy-CareTaker/proof',
+        //         quality: 'auto',
+        //     };
 
-            // Upload Aadhar proof to Cloudinary
-            const proofResult = await uploadToCloudinary(req.files.proof[0].buffer, proofOptions);
-            console.log('Uploaded Aadhar proof:', proofResult.secure_url);
+        //     // Upload Aadhar proof to Cloudinary
+        //     const proofResult = await uploadToCloudinary(req.files.proof[0].buffer, proofOptions);
+        //     console.log('Uploaded Aadhar proof:', proofResult.secure_url);
 
             
-            newCareTaker.proof = proofResult.secure_url;
-        }
+        //     newCareTaker.proof = proofResult.secure_url;
+        // }
 
         await newCareTaker.save();
         console.log(newCareTaker)
-        return res.status(200).json(newCareTaker);
+        const populateCareTaker = await CareTaker.findById(newCareTaker._id).populate('userId','username email phoneNumber')
+        return res.status(200).json(populateCareTaker);
     } catch (err) {
         console.error('Error creating caretaker:', err.message);
         res.status(500).json({ error: 'Something went wrong' });
@@ -125,24 +122,39 @@ careTakerCntrl.create = async (req, res) => {
     // }
 
 
-careTakerCntrl.uploads = async (req, res) => {
-    try {
-        if (req.file) {
-            console.log('File received:', req.file);
-            const body = _.pick(req.body, ['proof']);
-            const options = {
-                folder: 'Pet-Buddy-CareTaker/Proof',
-                quality: 'auto',
-            };
-            const result = await uploadToCloudinary(req.file.buffer, options);
-            console.log('Upload result:', result);
-            body.proof = result.secure_url
-          
-            res.status(200).json(result);
-        } else {
-            console.log('No file received');
-            return res.status(500).json({ errors: "Unable to find image" });
-        }
+    careTakerCntrl.uploads = async (req, res) => {
+        try {
+            if (req.file) {
+                console.log('File received:', req.file);
+                
+                // Upload file to Cloudinary
+                const options = {
+                    folder: 'Pet-Buddy-CareTaker/Proof',
+                    quality: 'auto',
+                };
+                const result = await uploadToCloudinary(req.file.buffer, options);
+                console.log('Upload result:', result);
+                
+                // Assuming you want to associate this proof URL with a CareTaker document
+                const careTakerId = req.params.id;
+                console.log(careTakerId)
+                
+                // Update CareTaker document with the proof URL
+                const updatedCareTaker = await CareTaker.findByIdAndUpdate(
+                    careTakerId,
+                    { proof: result.secure_url }, // Update the proof field with Cloudinary URL
+                    { new: true } // To return the updated document
+                );
+                
+                if (!updatedCareTaker) {
+                    return res.status(404).json({ error: 'CareTaker not found' });
+                }
+    
+                return res.status(200).json(updatedCareTaker);
+            } else {
+                console.log('No file received');
+                return res.status(500).json({ error: 'Unable to find image' });
+            }
     } catch (err) {
         console.error('Error uploading file:', err.message);
         res.status(500).json({ error: 'Error uploading file' });
@@ -158,9 +170,9 @@ careTakerCntrl.showallcareTaker = async (req, res) => {
     }
     const body = req.body
     try {
-        const caretakers = await CareTaker.find().populate("userId",['email', 'phoneNumber'])
+        const caretaker = await CareTaker.find().populate('userId','username email phoneNumber')
 
-        return res.status(200).json(caretakers)
+        return res.status(200).json(caretaker)
     } catch (err) {
         console.log(err.message)
         res.status(500).json({ errors: 'something went wrong' })
@@ -174,8 +186,8 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
     }
     const body = req.body
     try {
-        const careTakerId = req.params.id
-        const response = await CareTaker.findById(careTakerId).populate('userId','email','phoneNumber')
+        //const careTakerId = req.params.id
+        const response = await CareTaker.findById(req.params.id).populate('userId','username email phoneNumber')
         res.status(200).json(response)
 
     } catch (err) {
@@ -191,8 +203,8 @@ careTakerCntrl.update = async (req, res) => {
     }
     const body = req.body
     try {
-        const id = req.params.userId
-        const response = await careTaker.findByIdAndUpdate(req.params.id, body, { new: true })
+        //const id = req.params.userId
+        const response = await CareTaker.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidation:true}).populate('userId','username email phoneNumber')
         if (!response) {
             return res.json({ error: 'record not found' })
         }

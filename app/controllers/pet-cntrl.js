@@ -1,5 +1,7 @@
 const {validationResult} = require("express-validator")
 const Pet = require('../models/pet-model')
+const _ = require("lodash")
+const uploadToCloudinary = require('../utility/cloudinary')
 
 petCntrl={}
 
@@ -13,8 +15,26 @@ petCntrl.create=async(req,res)=>{
         body.userId=req.user.id
         const pet = new Pet(body)
         //pet.userId=req.user.userId
-        await pet.save()
-        const populateBooking = await Pet.findById(pet._id).populate('userId','username email phoneNumber')
+        const {petName,age,gender,breed,petPhoto,weight,categories}=req.body
+        const newPet= new Pet({
+            user: req.user.id,
+            petName,age,gender,breed,petPhoto,weight,categories
+        })
+        if (req.file) {
+            console.log('File received:', req.file);
+            const body = _.pick(req.body, ['petPhoto'])
+            const photoOptions = {
+                folder: 'Pet-Buddy-CareTaker/Pet',
+                quality: 'auto',
+            };
+            const photoResult = await uploadToCloudinary(req.file.buffer, photoOptions);
+            console.log('Upload result:', photoResult);
+            console.log('Uploaded photo:', photoResult.secure_url);
+            newPet.petPhoto = photoResult.secure_url;
+        }
+        await newPet.save()
+        console.log(newPet)
+        const populateBooking = await Pet.findById(newPet._id).populate('userId','username email phoneNumber')
         return res.json(populateBooking)
     } catch(err){
         console.log(err.message)

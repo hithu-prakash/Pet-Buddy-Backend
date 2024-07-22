@@ -6,8 +6,8 @@ const parentSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref:"User"
     },
-    username: String,
-    phoneNumber:String,
+    // username: String,
+    // phoneNumber:String,
      parentPhoto:String,
      address:String, 
      proof:String, 
