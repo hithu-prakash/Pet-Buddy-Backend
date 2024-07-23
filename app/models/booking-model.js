@@ -27,19 +27,9 @@ const bookingSchema = new Schema({
         type:String,
         default:"pending"
     },
+    
     totalAmount: Number,
-      // isCheckedIn: {
-      //   type: String,
-      //   default: false,
-      // },
-      //  isCheckedOut: {
-      //   type: String,
-      //   default: false,
-      // },
-      // isDeleted: {
-      //   type: String,
-      //   default: "pending",
-      // },
+      
       Accepted:{
          type:Boolean,
           default:false

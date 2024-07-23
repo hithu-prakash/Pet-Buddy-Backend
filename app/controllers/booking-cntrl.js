@@ -73,6 +73,7 @@ bookingCntrl.create=async(req,res)=>{
             booking.parentId = petParentId;
             // console.log("PETPARENT:",petParentId)
             booking.petId = petId;
+            
             // console.log("PetId",petId)
             await booking.save();
             const populateBooking = await Booking.findById(booking._id)

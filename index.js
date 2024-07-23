@@ -33,6 +33,7 @@ const  fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const helmet=require('helmet')
+const paymentCntrl = require('./app/controllers/payment-cntrl')
 
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms' /* 'common '*/, {
@@ -91,9 +92,14 @@ app.delete('/booking/delete/:id',bookingCntrl.delete)
 //review CRUD
 app.post('/review/create',authenticateUser,authorizeUser(['petParent']),reviewCntrl.create)
 app.get('/all/review',reviewCntrl.getAll)
-app.get('/single/review',reviewCntrl.getByCaretaker)
+app.get('/single/review/careTaker/:id',reviewCntrl.getByCaretaker)
 app.put('/update/review',authenticateUser,authorizeUser(['petParent']),reviewCntrl.update)
 app.delete('/delete/review',reviewCntrl.delete)
+
+//payment 
+app.post('/payment/pay',paymentCntrl.pay)
+app.put('/payment/success/:id',paymentCntrl.successUpdate)
+app.put('/payment/failed/:id',paymentCntrl.failedUpdate)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)

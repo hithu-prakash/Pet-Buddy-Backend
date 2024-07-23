@@ -10,16 +10,21 @@ const paymentSchema = new Schema({
         type: Schema.Types.ObjectId,
        ref:"caretaker"
    },
+   bookingId:{
+    type: Schema.Types.ObjectId,
+    ref:"Booking"
+   },
     paymentType: String,
     amount: Number,
-     date: Date,
+    
     transactionId: {
         type:String,
         default:false
     },
     paymentStatus:{
-        type: tring,
-        enum:['pending','sucess','failuer'] //default:"pending"
+        type:String,
+        enum:['pending','success','failure'],
+        default:'pending'
     }
 
 
