@@ -89,7 +89,7 @@ const userRegistrationValidation = {
         },
         isIn: {
             options: [['admin', 'careTaker','petParent']],
-            errorMessage: 'role either should be a admin or caretaker or user'
+            errorMessage: 'role either should be a admin or caretaker or petParent'
         },
         custom:{
             options: async function(ele) {

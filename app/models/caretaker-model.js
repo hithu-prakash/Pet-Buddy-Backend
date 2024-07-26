@@ -21,9 +21,18 @@ const careTakerSchema = new mongoose.Schema({
  proof:String, 
  bio: String,
  serviceCharges : [ {
-     specialityName: String, 
-     amount: Number,
-      time: Date } ]
+     specialityName: {
+      type: String,
+      required: true
+  }, 
+     amount: {
+      type: Number,
+      required: true
+  },
+      time: {
+         type: String,
+         required: true
+     } } ]
 }, { timestamps: true })
 
 const CareTaker = model('CareTaker',careTakerSchema)

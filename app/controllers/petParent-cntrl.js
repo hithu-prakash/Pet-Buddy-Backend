@@ -11,26 +11,55 @@ petParentCntrl.create = async(req,res)=>{
     if (!errors.isEmpty) {
         return res.status(400).json({ errors: errors.array() })
     }
-    try {
-        const { address,proof,parentPhoto } = req.body
-        const newpetParent = new Parent({
-            user: req.user.id,
+    try{
+        const { address,parentPhoto,proof} = req.body
+
+        const newPetParent = new Parent({
+            userId: req.user.id,
             address,
-            proof,
-            parentPhoto
-        })
-              if (req.file) {
-            const options = {
-                folder: 'Pet-Buddy-CareTaker/PetParentProfilePhoto',
+            parentPhoto,
+            proof
+        });
+
+        // Handle profile photo upload
+        if (req.files && req.files.parentPhoto && req.files.parentPhoto.length > 0) {
+            const photoFile = req.files.parentPhoto[0];
+            console.log('Photo file received:', photoFile);
+            
+            const photoOptions = {
+                folder: 'Pet-Buddy-PetParent/photo',
                 quality: 'auto',
-            }
-            const result = await uploadToCloudinary(req.file.buffer, options)
-            console.log(result.secure_url)
-            newpetParent.parentPhoto = result.secure_url
+            };
+
+            // Upload profile photo to Cloudinary
+            const photoResult = await uploadToCloudinary(photoFile.buffer, photoOptions);
+            console.log('Upload result:', photoResult);
+            console.log('Uploaded photo:', photoResult.secure_url);
+
+            // Assign Cloudinary URL to neweptparent.photo field
+            newPetParent.parentPhoto = photoResult.secure_url;
         }
-        await newpetParent.save()
-        return res.status(200).json(newpetParent)
-    } catch (err) {
+         // Handle proof image upload
+         if (req.files && req.files.proof && req.files.proof.length > 0) {
+            const proofFile = req.files.proof[0];
+            console.log('Proof file received:', proofFile);
+
+            // Check  proof present
+            const proofOptions = {
+                folder: 'Pet-Buddy-PetParent/proof',
+                quality: 'auto',
+            };
+            const proofResult = await uploadToCloudinary(proofFile.buffer, proofOptions);
+            console.log('Uploaded proof:', proofResult.secure_url);
+            newPetParent.proof = proofResult.secure_url;
+        } else {
+            return res.status(400).json({ errors: [{ msg: 'Proof file is required.' }] });
+        }
+        // Save new CareTaker 
+        await newPetParent.save()
+        const populatePetParent = await Parent.findById(newPetParent._id).populate('userId','username email phoneNumber')
+        res.status(201).json(populatePetParent)
+    }catch (err) {
         console.log(err.message)
         res.status(500).json('something went wrong')
     }
@@ -45,44 +74,6 @@ petParentCntrl.create = async(req,res)=>{
     //   }
 }
 
-petParentCntrl.uploads = async (req, res) => {
-    try {
-        if (req.file) {
-            console.log('File received:', req.file);
-            
-            // Upload file to Cloudinary
-            const options = {
-                folder: 'Pet-Buddy-CareTaker/PetParentProfileProof',
-                quality: 'auto',
-            };
-            const result = await uploadToCloudinary(req.file.buffer, options);
-            console.log('Upload result:', result);
-            
-            // Assuming you want to associate this proof URL with a CareTaker document
-            const petParentId = req.params.id;
-            console.log(petParentId)
-            
-            // Update CareTaker document with the proof URL
-            const updatedParent = await Parent.findByIdAndUpdate(
-                petParentId,
-                { proof: result.secure_url }, // Update the proof field with Cloudinary URL
-                { new: true } // To return the updated document
-            );
-            
-            if (!updatedParent) {
-                return res.status(404).json({ error: 'petParent not found' });
-            }
-
-            return res.status(200).json(updatedParent);
-        } else {
-            console.log('No file received');
-            return res.status(500).json({ error: 'Unable to find image' });
-        }
-} catch (err) {
-    console.error('Error uploading file:', err.message);
-    res.status(500).json({ error: 'Error uploading file' });
-}
-};
 
 petParentCntrl.showall = async(req,res)=>{
     try{        
