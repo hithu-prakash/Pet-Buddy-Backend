@@ -85,23 +85,17 @@ petParentCntrl.showall = async(req,res)=>{
     }
 }
 
-petParentCntrl.showone = async(req,res)=>{
-    const errors = validationResult(req)
-    if (!errors.isEmpty) {
-        return res.status(400).json({ errors: errors.array() })
-    }
-   // const body = req.body
-    try {
-        const Id = req.params.id
-        const response = await Parent.findById(Id).populate('userId',['email','phoneNumber'])
-        console.log(response)
-        res.status(200).json(response)
-
-    } catch (err) {
-        console.log(err.message)
-        res.status(500).json({ errors: 'something went wrong' })
-    }
-}
+petParentCntrl.showone=async(req,res)=>{
+    try{ 
+        const pet=await Parent.findOne({userId:req.user.id}).populate('userId','email username phoneNumber')
+     if(!pet){
+         return res.json({error:'No records found'})
+     }
+     res.status(200).json(pet)
+   }catch(err){
+     res.status(500).json({error:'somthing went wrong'})
+   }
+ }
 
 petParentCntrl.update = async(req,res)=>{
     const errors = validationResult(req)

@@ -5,21 +5,49 @@ const uploadToCloudinary = require('../utility/cloudinary')
 
 petCntrl={}
 
-petCntrl.create=async(req,res)=>{
+petCntrl.create = async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty){
-        res.status(400).json({errors:array()})
+    if (!errors.isEmpty) {
+        res.status(400).json({ errors: array() })
     }
-    try{
-        const body= req.body
-        body.userId=req.user.id
+    try {
+        const body = req.body
+        body.userId = req.user.id
         const pet = new Pet(body)
-        //pet.userId=req.user.userId
-        const {petName,age,gender,breed,petPhoto,weight,categories}=req.body
-        const newPet= new Pet({
+        const {
+            petName,
+            age,
+            gender,
+            breed,
+            petPhoto,
+            weight,
+            categories,
+            medication,
+            reminders
+        } = req.body
+
+        const newPet = new Pet({
             user: req.user.id,
-            petName,age,gender,breed,petPhoto,weight,categories
+            petName,
+            age,
+            gender,
+            breed,
+            petPhoto,
+            weight,
+            categories,
+            medication: {
+                medicationName: medication.medicationName,
+                description: medication.description,
+                dueDate: medication.dueDate,
+                dose: medication.dose
+            },
+            reminders: {
+                date: reminders.date,
+                title: reminders.title,
+                note: reminders.note
+            }
         })
+
         if (req.file) {
             console.log('File received:', req.file);
             const body = _.pick(req.body, ['petPhoto'])
@@ -34,9 +62,9 @@ petCntrl.create=async(req,res)=>{
         }
         await newPet.save()
         console.log(newPet)
-        const populateBooking = await Pet.findById(newPet._id).populate('userId','username email phoneNumber')
+        const populateBooking = await Pet.findById(newPet._id).populate('userId', 'username email phoneNumber')
         return res.json(populateBooking)
-    } catch(err){
+    } catch (err) {
         console.log(err.message)
         res.status(500).json("Internal error")
     }
@@ -58,18 +86,16 @@ petCntrl.showAll=async(req,res)=>{
 }
 
 petCntrl.singelPet=async(req,res)=>{
-    const errors = validationResult(req)
-    if(!errors.isEmpty){
-        res.status(400).json({errors:array()})
-    }
-    try{
-        const petId = req.params.id
-        const pets= await Pet.findOne({userId:req.user.id,_id:petId}).populate("userId", ['username'])
-        return res.status(200).json(pets)
-    } catch(err){
-        console.log(err.message)
-        res.status(500).json({errors:'something went wrong'})
-    }
+    try{ 
+        console.log(req.user.id)
+        const pet=await Pet.findOne({userId:req.user.id}).populate('userId','email username phoneNumber')
+     if(!pet){
+         return res.json({error:'No records found'})
+     }
+     res.status(200).json(pet)
+   }catch(err){
+     res.status(500).json({error:'somthing went wrong'})
+   }
 }
 
 petCntrl.update=async(req,res)=>{

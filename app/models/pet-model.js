@@ -13,19 +13,19 @@ const petSchema = new Schema({
         type: Boolean, default: false
     },
     
-       medication:{
+       medication:[{
         medicationName: String,
         description: String,
         dueDate:Date,
         dose: String
-    },
-    reminders:{
+    }],
+    reminders:[{
         date: Date,
         title :String,
         note:String
-    },
-    userId:{
-        type:Schema.Types.ObjectId, //petParent
+    }],
+    userId: {
+        type: Schema.Types.ObjectId,
         ref:"User"
     }
 

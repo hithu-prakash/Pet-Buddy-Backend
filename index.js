@@ -54,13 +54,13 @@ app.put('/user/update',authenticateUser,checkSchema(userUpdateValidation),userCn
 app.post('/user/verify',checkSchema(verifyOtpValidations),userCntrl.verify)
 app.post('/user/forgotPassword',userCntrl.forgetPassword)
 app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPassword)
-app.delete('/userId/remove/:id',authenticateUser,userCntrl.Remove)
+//app.delete('/userId/remove/:id',authenticateUser,userCntrl.Remove)
 
 //careTaker CRUD
             //upload.single('proof')                                                              //checkSchema(careTakerValidation)
 app.post('/caretaker/create',upload.fields([{name:'photo',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
 app.get('/caretaker/showallcareTaker',careTakerCntrl.showallcareTaker)
-app.get('/careTaker/singlecareTaker/:id',authenticateUser,careTakerCntrl.singlecareTaker)
+app.get('/careTaker/singlecareTaker',authenticateUser,careTakerCntrl.singlecareTaker)
 app.put('/careTaker/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
 app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.delete)
 
@@ -70,14 +70,14 @@ app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTa
 app.post('/petParent/create',upload.fields([{name:'parentPhoto',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['petParent']),checkSchema(petParentValidation),petParentCntrl.create)
 
 app.get('/petParent/showall',petParentCntrl.showall)
-app.get('/petParent/oneParent/:id',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.showone)
+app.get('/petParent/oneParent',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.showone)
 app.put('/petParent/update/:id',authenticateUser,authorizeUser(['admin','petParent']),checkSchema(petParentUpdateValidation),petParentCntrl.update)
 app.delete('/petParent/delete/:id',petParentCntrl.delete)
 
 //pet CRUD
 app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),checkSchema(petValidation),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
-app.get('/pet/singlePet/:id',authenticateUser,petCntrl.singelPet)
+app.get('/pet/singlePet',authenticateUser,petCntrl.singelPet)
 app.put('/pet/update/:id',authenticateUser,authorizeUser(['petParent']),checkSchema(petUpdateValidation),petCntrl.update)
 app.delete('/pet/delete/:id',petCntrl.delete)
 
