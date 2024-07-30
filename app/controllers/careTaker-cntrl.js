@@ -16,14 +16,14 @@ careTakerCntrl.create = async (req, res) => {
     try{
         const body = req.body;
         body.userId = req.user.id;
-        const { careTakerBusinessName,address, bio, serviceCharges } = req.body
+        const { businessName, address, bio, serviceCharges } = req.body;
         const parsedServiceCharges = typeof serviceCharges === 'string'
         ? JSON.parse(serviceCharges)
         : serviceCharges;
 
         const newCareTaker = new CareTaker({
             userId: req.user.id,
-            careTakerBusinessName,
+            businessName,
             address,
             bio,
             serviceCharges: parsedServiceCharges
@@ -117,8 +117,10 @@ careTakerCntrl.update = async (req, res) => {
     }
     const body = req.body
     try {
-        const { id } = req.params;
-        const { careTakerBusinessName, address, bio, serviceCharges } = req.body;
+        const { id, careTakerBusinessName, address, bio, serviceCharges } = req.body;
+    if (!id) {
+        return res.status(400).json({ errors: [{ msg: 'ID is required' }] });
+    }
         const parsedServiceCharges = typeof serviceCharges === 'string'
             ? JSON.parse(serviceCharges)
             : serviceCharges;

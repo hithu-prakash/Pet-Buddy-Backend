@@ -86,15 +86,20 @@ petParentCntrl.showall = async(req,res)=>{
 }
 
 petParentCntrl.showone=async(req,res)=>{
-    try{ 
-        const pet=await Parent.findOne({userId:req.user.id}).populate('userId','email username phoneNumber')
-     if(!pet){
-         return res.json({error:'No records found'})
-     }
-     res.status(200).json(pet)
-   }catch(err){
-     res.status(500).json({error:'somthing went wrong'})
-   }
+    try {
+
+        console.log('User ID:', req.user.id)
+        const pet = await Parent.findOne({ userId: req.user.id }).populate('userId', 'email username phoneNumber');
+        console.log('Fetched Pet Parent:', pet)
+        if (!pet) {
+            return res.status(404).json({ error: 'No records found' });
+        }
+
+        res.status(200).json(pet);
+    } catch (err) {
+        console.error('Error fetching pet parent details:', err);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
  }
 
 petParentCntrl.update = async(req,res)=>{
@@ -103,8 +108,56 @@ petParentCntrl.update = async(req,res)=>{
         return res.status(400).json({ errors: errors.array() })
     }
     const body = req.body
-    try{
-        const id = req.params.userId
+    try{const { address,parentPhoto,proof} = req.body
+
+    const newPetParent = new Parent({
+        userId: req.user.id,
+        address,
+        parentPhoto,
+        proof
+    });
+
+    // Handle profile photo upload
+    if (req.files && req.files.parentPhoto && req.files.parentPhoto.length > 0) {
+        const photoFile = req.files.parentPhoto[0];
+        console.log('Photo file received:', photoFile);
+        
+        const photoOptions = {
+            folder: 'Pet-Buddy-PetParent/photo',
+            quality: 'auto',
+        };
+
+        // Upload profile photo to Cloudinary
+        const photoResult = await uploadToCloudinary(photoFile.buffer, photoOptions);
+        console.log('Upload result:', photoResult);
+        console.log('Uploaded photo:', photoResult.secure_url);
+
+        // Assign Cloudinary URL to neweptparent.photo field
+        newPetParent.parentPhoto = photoResult.secure_url;
+    }
+     // Handle proof image upload
+     if (req.files && req.files.proof && req.files.proof.length > 0) {
+        const proofFile = req.files.proof[0];
+        console.log('Proof file received:', proofFile);
+
+        // Check  proof present
+        const proofOptions = {
+            folder: 'Pet-Buddy-PetParent/proof',
+            quality: 'auto',
+        };
+        const proofResult = await uploadToCloudinary(proofFile.buffer, proofOptions);
+        console.log('Uploaded proof:', proofResult.secure_url);
+        newPetParent.proof = proofResult.secure_url;
+    } else {
+        return res.status(400).json({ errors: [{ msg: 'Proof file is required.' }] });
+    }
+    // Save new CareTaker 
+    await newPetParent.save()
+
+    const parentPhotoPath = req.files.parentPhoto ? req.files.parentPhoto[0].path : null;
+        const proofPath = req.files.proof ? req.files.proof[0].path : null;
+    
+        // const id = req.params.userId
         const response = await Parent.findByIdAndUpdate(req.params.id, body, { new: true })
         console.log(response)
         
