@@ -8,7 +8,7 @@ const paymentSchema = new Schema({
     },
     caretakerId:{
         type: Schema.Types.ObjectId,
-       ref:"caretaker"
+       ref:"CareTaker"
    },
    bookingId:{
     type: Schema.Types.ObjectId,

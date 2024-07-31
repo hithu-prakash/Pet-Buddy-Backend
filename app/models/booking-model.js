@@ -6,10 +6,11 @@ const bookingSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref:"User" //parentId
     },
-    caretakerId:{
-    type: Schema.Types.ObjectId, //careTakerId
-       ref:"CareTaker"
-   },
+    caretakerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CareTaker',
+        required: true
+    },
    petId:{
     type: Schema.Types.ObjectId,
     ref:"Pet"

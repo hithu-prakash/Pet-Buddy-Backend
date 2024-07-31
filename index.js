@@ -22,6 +22,7 @@ const petParentCntrl=require('./app/controllers/petParent-cntrl')
 const petCntrl=require('./app/controllers/pet-cntrl')
 const bookingCntrl =require('./app/controllers/booking-cntrl')
 const reviewCntrl=require('./app/controllers/review-cntrl')
+const adminCltr=require('./app/controllers/admin-cntrl')
 
 const authenticateUser = require('./app/middleware/authenticateUser')
 const authorizeUser = require('./app/middleware/authorizeUser')
@@ -68,7 +69,6 @@ app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTa
 //petParent CRUD
 
 app.post('/petParent/create',upload.fields([{name:'parentPhoto',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['petParent']),checkSchema(petParentValidation),petParentCntrl.create)
-
 app.get('/petParent/showall',petParentCntrl.showall)
 app.get('/petParent/oneParent',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.showone)
 app.put('/petParent/update/:id',upload.fields([{name:'parentPhoto',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['admin','petParent']),checkSchema(petParentUpdateValidation),petParentCntrl.update)
@@ -78,7 +78,7 @@ app.delete('/petParent/delete/:id',petParentCntrl.delete)
 app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
 app.get('/pet/singlePet',authenticateUser,petCntrl.singelPet)
-app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),checkSchema(petUpdateValidation),petCntrl.update)
+app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.update)
 app.delete('/pet/delete/:id',petCntrl.delete)
 
 //booking CRUD
@@ -100,6 +100,11 @@ app.delete('/delete/review',reviewCntrl.delete)
 app.post('/payment/pay',paymentCntrl.pay)
 app.put('/payment/success/:id',paymentCntrl.successUpdate)
 app.put('/payment/failed/:id',paymentCntrl.failedUpdate)
+
+//admin
+app.get('/api/admin/caretakers',adminCltr.getAllCareTakers)
+app.get('/api/admin/petparents',adminCltr.getAllPetParents)
+app.put('/api/admin/verify-caretakers/:id',adminCltr.verifyCareTaker)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)
