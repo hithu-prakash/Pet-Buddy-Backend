@@ -2,7 +2,7 @@ const Payment=require('../models/payment-model')
 const Booking =require('../models/booking-model')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const { validationResult } = require('express-validator')
-const nodeMailer=require('../utility/nodeMailer')
+//const nodeMailer=require('../utility/nodeMailer')
 const _= require('lodash')
 
 const paymentCntrl={}

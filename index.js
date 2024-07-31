@@ -61,7 +61,7 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
 app.post('/caretaker/create',upload.fields([{name:'photo',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
 app.get('/caretaker/showallcareTaker',careTakerCntrl.showallcareTaker)
 app.get('/careTaker/singlecareTaker',authenticateUser,careTakerCntrl.singlecareTaker)
-app.put('/careTaker/update', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
+app.put('/careTaker/update/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
 app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.delete)
 
 
@@ -75,7 +75,7 @@ app.put('/petParent/update/:id',upload.fields([{name:'parentPhoto',maxCount:1},{
 app.delete('/petParent/delete/:id',petParentCntrl.delete)
 
 //pet CRUD
-app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),checkSchema(petValidation),petCntrl.create) //checkSchema(petValidation)
+app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
 app.get('/pet/singlePet',authenticateUser,petCntrl.singelPet)
 app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),checkSchema(petUpdateValidation),petCntrl.update)

@@ -33,6 +33,77 @@ const generateOtp = () => {
 
 //Register 
 
+// userCntrl.register = async (req, res) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//       return res.status(400).json({ errors: errors.array() });
+//   }
+//   const { username, phoneNumber, role } = req.body 
+//   try {
+//       const body = req.body;
+//       const otp = generateOtp()
+//       const salt = await bcryptjs.genSalt();
+//       const hashPassword = await bcryptjs.hash(body.password, salt);
+//       const role = (await User.countDocuments({})) === 0 ? 'admin' : body.role;
+//       const user = new User(body);
+//       user.password = hashPassword;
+//       await user.save();
+//       // await userCltr.sendSMS(username, phoneNumber, role,otp)
+//       userCltr.registerOtpMail(user.username,user.email,role,otp)
+//       res.status(201).json({ message: 'User registered. Please verify the OTP sent to your email.' });
+//   } catch (err) {
+//       console.log(err.message);
+//       res.status(500).json({ errors: "something went wrong" });
+//   }
+// };
+
+// // send SMS to register
+// userCntrl.sendSMS = async (username, phoneNumber, role, otp) => {
+//   let msgOptions = {
+//       from: process.env.TWILIO_PHONE_NUMBER,
+//       to: "+91" + phoneNumber,
+//       body: `Hi ${username},, you are now successfully registered to PetBuddy with role: ${role}. Your OTP is: ${otp}`,
+//   };
+//   try {
+//       const message = await client.messages.create(msgOptions);
+//       console.log(`SMS sent to ${phoneNumber} with OTP.`);
+//   } catch (error) {
+//       console.error(`Error sending SMS to ${phoneNumber}:`, error);
+//       throw new Error('Failed to send SMS');
+//   }
+// }
+
+// //send opt mail for registration
+// userCntrl.registerOtpMail =async (username,email,role,otp) => {
+//   const transporter = nodemailer.createTransport({
+//       host: 'smtp.gmail.com',
+//       port: 465,
+//       secure: true,
+//       auth: {
+//           user: process.env.EMAIL,
+//           pass: process.env.PASSWORD
+//       }
+//   })
+//   console.log(email,username)
+//   const html = `
+//   <p>Hi ${username}.<br/> Enter the  OTP to complete successfully registration to PetBuddy with role: ${role}.<br/> Your OTP is: ${otp}</p>
+//      <p>Note: Donot share otp with any one<br />The PetBuddy admin</p>
+//   `;
+//   try{
+//       const info = await
+//        transporter.sendMail({
+//           from:process.env.EMAIL,
+//           to: email,
+//           subject: "RegisterOtp",
+//           html: html
+//       });
+//       console.log("Email sent",info.response);
+//   }catch(error){
+//       console.log("Error sending email:",error)
+//   }
+// }
+
+
 userCntrl.Register = async(req,res) =>{
     const errors = validationResult(req)
     if(!errors.isEmpty()) {

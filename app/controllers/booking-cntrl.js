@@ -41,10 +41,7 @@ bookingCntrl.create=async(req,res)=>{
             await booking.save();
             
             // Populate booking with parent, caretaker, and pet details
-            const populatedBooking = await Booking.findById(booking._id).populate('petId', 'name'); 
-        
-                // .populate('userId', 'username', 'email', 'phoneNumber')//.populate('caretakerId', ['username', 'email', 'phoneNumber']) 
-                //.populate('petId', ['name', 'species']); 
+            const populatedBooking = await Booking.findById(booking._id).populate('petId', 'name') .populate('userId', 'username', 'email', 'phoneNumber').populate('caretakerId', ['username', 'email', 'phoneNumber']) .populate('petId', ['name', 'species']); 
         
             // Respond with the populated booking information
             res.status(200).json(populatedBooking);

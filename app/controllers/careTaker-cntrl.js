@@ -111,16 +111,14 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
 }
 
 careTakerCntrl.update = async (req, res) => {
-    const errors = validationResult(req)
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        return res.status(400).json({ errors: errors.array() });
     }
-    const body = req.body
+
     try {
-        const { id, careTakerBusinessName, address, bio, serviceCharges } = req.body;
-    if (!id) {
-        return res.status(400).json({ errors: [{ msg: 'ID is required' }] });
-    }
+        const { id } = req.params;
+        const { businessName, address, bio, serviceCharges } = req.body;
         const parsedServiceCharges = typeof serviceCharges === 'string'
             ? JSON.parse(serviceCharges)
             : serviceCharges;
@@ -134,7 +132,7 @@ careTakerCntrl.update = async (req, res) => {
 
         // Merge the new data with existing data
         const updateData = {
-            careTakerBusinessName: careTakerBusinessName || existingCareTaker.careTakerBusinessName,
+            businessName: businessName || existingCareTaker.businessName,
             address: address || existingCareTaker.address,
             bio: bio || existingCareTaker.bio,
             serviceCharges: parsedServiceCharges || existingCareTaker.serviceCharges,
@@ -182,12 +180,13 @@ careTakerCntrl.update = async (req, res) => {
 
 careTakerCntrl.delete = async (req, res) => {
     try {
-        const response = await careTaker.findByIdAndDelete(req.params.id)
+        const response = await CareTaker.findByIdAndDelete(req.params.id)
         if (!response) {
             return res.status(404).send()
         }
         return res.status(200).json(response)
     } catch (error) {
+        console.log(error)
         res.status(500).json({ errors: 'something went wrong' })
     }
 }

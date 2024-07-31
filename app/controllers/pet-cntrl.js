@@ -2,6 +2,7 @@ const {validationResult} = require("express-validator")
 const Pet = require('../models/pet-model')
 const _ = require("lodash")
 const uploadToCloudinary = require('../utility/cloudinary')
+const Parent = require('../models/petparent-model')
 
 petCntrl={}
 
@@ -10,12 +11,30 @@ petCntrl.create = async (req, res) => {
     // if (!errors.isEmpty()) {
     //     return res.status(400).json({ errors: errors.array() });
     // }
-
     try {
         const body = req.body;
         body.userId = req.user.id;
-        body.medication = JSON.parse(body.medication);
-        body.reminders = JSON.parse(body.reminders);
+        
+        // Find the pet parent associated with the user
+        const petParent = await Parent.findOne({ userId: req.user.id });
+        if (!petParent) {
+            return res.status(400).json({ errors: [{ msg: 'Pet Parent profile not found for this user.' }] });
+        }
+
+        // Assign petParentId to the body
+        body.petParentId = petParent._id;
+
+        // Parse medication and reminders fields if they are strings
+        try {
+            if (typeof body.medication === 'string') {
+                body.medication = JSON.parse(body.medication);
+            }
+            if (typeof body.reminders === 'string') {
+                body.reminders = JSON.parse(body.reminders);
+            }
+        } catch (parseError) {
+            return res.status(400).json({ errors: [{ msg: 'Invalid format for medication or reminders.' }] });
+        }
 
         // Handle file upload
         if (req.file) {
@@ -32,11 +51,16 @@ petCntrl.create = async (req, res) => {
         // Create new pet with medication and reminders as arrays
         const newPet = new Pet(body);
         await newPet.save();
-        console.log(newPet);
+        console.log('New pet created:', newPet);
 
-        // Populate userId details
-        const populateBooking = await Pet.findById(newPet._id).populate('userId', 'username email phoneNumber');
-        return res.json(populateBooking);
+        // Populate userId and petParentId details
+        const populatedPet = await Pet.findById(newPet._id)
+            .populate('petParentId', 'address parentPhoto proof')
+            .populate('userId', 'username email phoneNumber');
+
+        console.log('Populated pet:', populatedPet);
+
+        return res.json(populatedPet);
     } catch (err) {
         console.error('Error:', err.message);
         res.status(500).json({ error: 'Internal error' });
@@ -86,10 +110,12 @@ petCntrl.update = async (req, res) => {
     //     return res.status(400).json({ errors: errors.array() });
     // }
 
-    const body = req.body;
-    const id = req.params.id;
+    // const body = req.body;
+    // const { id } = req.params.id
 
     try {
+        const body = req.body;
+    const { id } = req.params
         // Handle file upload if any
         if (req.file) {
             console.log('File received:', req.file);

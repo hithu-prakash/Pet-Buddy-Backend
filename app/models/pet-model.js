@@ -28,7 +28,7 @@ const petSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref:"User"
     },
-    petParent:{
+    petParentId:{
         type:Schema.Types.ObjectId,
         ref:"Parent"
     }

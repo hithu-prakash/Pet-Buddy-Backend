@@ -18,7 +18,7 @@ const bookingSchema = new Schema({
     type:Schema.Types.ObjectId,
     ref:"Parent"
    },
-   category:String,
+  // category:String,
    date:{
     // startTime: Date,
     // endTime: Date
@@ -28,7 +28,7 @@ const bookingSchema = new Schema({
         default:"pending"
     },
     
-    totalAmount: Number,
+   // totalAmount: Number,
       
       Accepted:{
          type:Boolean,
