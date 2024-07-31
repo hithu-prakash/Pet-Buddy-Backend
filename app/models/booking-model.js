@@ -4,10 +4,10 @@ const {Schema,model} = mongoose
 const bookingSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref:"User" //parentId
+        ref:"User"
     },
     caretakerId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'CareTaker',
         required: true
     },
@@ -28,9 +28,8 @@ const bookingSchema = new Schema({
         type:String,
         default:"pending"
     },
-    
-   // totalAmount: Number,
-      
+    totalAmount: Number,
+       
       Accepted:{
          type:Boolean,
           default:false

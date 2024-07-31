@@ -15,7 +15,7 @@ const paymentSchema = new Schema({
     ref:"Booking"
    },
     paymentType: String,
-    amount: Number,
+    //amount: Number,
     
     transactionId: {
         type:String,

@@ -82,7 +82,7 @@ app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUs
 app.delete('/pet/delete/:id',petCntrl.delete)
 
 //booking CRUD
-app.post('/booking/create/careTaker/:id/Pet/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.create)
+app.post('/booking/create/careTaker/:caretakerId/Pet/:petId', authenticateUser, authorizeUser(['petParent']), bookingCntrl.create);
 app.get('/booking/allbooking',bookingCntrl.allBookings)
 app.get('/booking/singlebooking/:id',authenticateUser,bookingCntrl.singleBooking)
 app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)

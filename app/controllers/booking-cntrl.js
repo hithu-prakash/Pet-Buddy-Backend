@@ -6,52 +6,44 @@ const Pet = require('../models/pet-model')
 
 const bookingCntrl={}
 
-bookingCntrl.create=async(req,res)=>{
-    const errors=validationResult(req)
-        if(!errors.isEmpty()){
-            return res.json({errors:errors.array()})
-        }
-       
-        // try{
-        //     const body=req.body
-        //     const Id=req.params.caretakerId
-        //     console.log(Id)
-        //     const booking = new Booking(body)
-        //     booking.parentId = req.user.id;
-        //     booking.caretakerId = Id;
-        //     await booking.save()
-        //     const populateBooking = await Booking.findById(booking._id).populate('userId',['username email phoneNumber'])
-        //     res.status(200).json(populateBooking)
-        // } catch(err) {
-        //     console.log(err.message)
-        //     res.status(500).json({errors:"something went wrong"})
-        // }
-        try {
-            const body = req.body;
-            const caretakerId = req.params.caretakerId; // Caretaker ID selected by parent
-            const parentId = req.user.id; // Parent ID making the booking
+bookingCntrl.create = async (req, res) => {
+    try {
+        const { caretakerId, petId } = req.params; // Extract parameters from URL
+        const parentId = req.user.id; // Extract parent ID from authenticated user
+        console.log(parentId)
+
+        // Create a new booking with the body data
+        const booking = new Booking({
+            ...req.body,
+            parentId,        // Set parentId directly
+            caretakerId,     // Set caretakerId from URL params
+            petId            // Set petId from URL params
+        });
         
-            const  petId = req.params.petId
-            const booking = new Booking(body);
-            
-            // Set the parent ID and caretaker ID for the booking
-            booking.parentId = parentId;
-                    
-            // Save the booking to the database
-            await booking.save();
-            
-            // Populate booking with parent, caretaker, and pet details
-            const populatedBooking = await Booking.findById(booking._id).populate('petId', 'name') .populate('userId', 'username', 'email', 'phoneNumber').populate('caretakerId', ['username', 'email', 'phoneNumber']) .populate('petId', ['name', 'species']); 
-        
-            // Respond with the populated booking information
-            res.status(200).json(populatedBooking);
-        } catch(err){
-            console.log(err.message)
-            res.status(500).json({errors:'something went wrong'})
-        }
-        
-            
-}
+
+        // Save the booking to the database
+        await booking.save();
+
+        // Populate booking with related details
+        const populatedBooking = await Booking.findById(booking._id)
+        .populate('userId','username email phoneNumber')
+        .populate('petId', 'petName age gender categories breed petPhoto weight vaccinated')
+        .populate('parentId', 'parentPhoto address proof')
+        .populate({
+            path: 'caretakerId',
+            select: 'businessName address isVerified bio',
+            populate: {
+                path: 'serviceCharges',
+                select: 'specialityName amount time'
+            }
+        });
+        console.log(populatedBooking)
+        res.status(200).json(populatedBooking);
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).json({ errors: 'Something went wrong' });
+    }
+};
 
 bookingCntrl.allBookings=async(req,res)=>{
     const booking = await Booking.find().populate('userId',['username', 'email', 'phoneNumber'])
