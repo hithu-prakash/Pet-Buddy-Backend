@@ -1,44 +1,78 @@
 const {validationResult} = require('express-validator')
 const Booking=require('../models/booking-model')
 const User = require('../models/user-model')
+const Parent= require('../models/petparent-model')
 const CareTaker=require('../models/caretaker-model')
 const Pet = require('../models/pet-model')
 
 const bookingCntrl={}
 
 bookingCntrl.create = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     try {
-        const { caretakerId, petId } = req.params; // Extract parameters from URL
-        const parentId = req.user.id; // Extract parent ID from authenticated user
-        console.log(parentId)
+        const userId = req.user.id;
+        const { caretakerId } = req.params;
+        const { serviceName , date } = req.body;
 
-        // Create a new booking with the body data
-        const booking = new Booking({
-            ...req.body,
-            parentId,        // Set parentId directly
-            caretakerId,     // Set caretakerId from URL params
-            petId            // Set petId from URL params
+        console.log('serviceName :',serviceName);
+        console.log('received CareTakerId : ',caretakerId);
+
+        // Fetch CareTaker details
+        const caretaker = await CareTaker.findById(caretakerId);
+        if (!caretaker) {
+            return res.status(404).json({ errors: [{ msg: 'Caretaker not found' }] });
+        }
+
+        // Fetch Pet and PetParent details
+        const pet = await Pet.findOne({ userId });
+        console.log('pet',pet)
+        if (!pet) {
+            return res.status(404).json({ errors: [{ msg: 'Pet not found' }] });
+        }
+        const petParent = await Parent.findOne({userId});
+        console.log(petParent)
+        if (!petParent) {
+            return res.status(404).json({ errors: [{ msg: 'PetParent not found' }] });
+        }
+
+        // Find the service charge based on the serviceName
+        const serviceCharge = caretaker.serviceCharges.find(charge => charge.specialityName === serviceName);
+        if (!serviceCharge) {
+            return res.status(400).json({ errors: 'Invalid service name.' });
+        }
+
+        // Calculate the hourly rate
+        const hourlyRate = serviceCharge.amount / serviceCharge.time;
+        console.log('hourlyRate : ',hourlyRate)
+        // Calculate the total booking time in hours
+        const startTime = new Date(date.startTime);
+        const endTime = new Date(date.endTime);
+        const bookingDurationInHours = (endTime - startTime) / (1000 * 60 * 60);
+        console.log('bookingDuration : ',bookingDurationInHours)
+        // Calculate the total amount based on the booking duration
+        const totalAmount = hourlyRate * bookingDurationInHours;
+        const category = pet.category;
+
+        const newBooking = new Booking({
+            userId,
+            caretakerId,
+            petId: pet._id,
+            parentId: petParent._id,
+            date,
+            totalAmount: totalAmount,
+            serviceName: serviceName,
+            status:"pending",
+            bookingDurationInHours: bookingDurationInHours,
+            category
         });
-        
 
-        // Save the booking to the database
-        await booking.save();
+        await newBooking.save();
+        const populatedBooking = await Booking.findById(newBooking._id).populate('userId', 'username email phoneNumber').populate('caretakerId', 'careTakerBusinessName verifiedByAdmin address bio photo proof serviceCharges').populate('petId', 'petName age gender category breed petPhoto weigth').populate('parentId', 'address photo proof');
 
-        // Populate booking with related details
-        const populatedBooking = await Booking.findById(booking._id)
-        .populate('userId','username email phoneNumber')
-        .populate('petId', 'petName age gender categories breed petPhoto weight vaccinated')
-        .populate('parentId', 'parentPhoto address proof')
-        .populate({
-            path: 'caretakerId',
-            select: 'businessName address isVerified bio',
-            populate: {
-                path: 'serviceCharges',
-                select: 'specialityName amount time'
-            }
-        });
-        console.log(populatedBooking)
-        res.status(200).json(populatedBooking);
+        res.status(201).json(populatedBooking);
     } catch (err) {
         console.log(err.message);
         res.status(500).json({ errors: 'Something went wrong' });
@@ -92,7 +126,7 @@ bookingCntrl.acceptedByCaretaker = async(req,res)=>{
     }
     try{
         const body= req.body
-        const caretakerId  = req.params.caretakerId; // Caretaker ID selected by parent
+        const caretakerId  = req.caretakerId; // Caretaker ID selected by parent
         console.log(caretakerId)
         const bookingId = req.params.bookingId; // Booking ID
         const response=await Booking.findOneAndUpdate({_id:bookingId,petParent:caretakerId},body,{new:true})

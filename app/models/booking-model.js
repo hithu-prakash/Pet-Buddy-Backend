@@ -19,11 +19,24 @@ const bookingSchema = new Schema({
     type:Schema.Types.ObjectId,
     ref:"Parent"
    },
+   serviceName: {
+    type: String,
+    required: true
+},
   // category:String,
-   date:{
-    // startTime: Date,
-    // endTime: Date
+  date: {
+    startTime: {
+        type: Date,
+        required: true
     },
+    endTime: {
+        type: Date,
+        required: true
+    }
+}, bookingDurationInHours: { 
+    type: Number,
+    required: true
+},
     status:{
         type:String,
         default:"pending"

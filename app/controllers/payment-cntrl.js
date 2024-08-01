@@ -1,6 +1,7 @@
 const Payment=require('../models/payment-model')
 const Booking =require('../models/booking-model')
 const CareTaker=require('../models/caretaker-model')
+const Parent = require('../models/petparent-model')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const { validationResult } = require('express-validator')
 //const nodeMailer=require('../utility/nodeMailer')
@@ -10,41 +11,29 @@ const paymentCntrl={}
 
 paymentCntrl.pay = async (req, res) => {
     const errors = validationResult(req)
-    if (!errors.isEmpty()) {
+    if (!errors.isEmpty) {
         return res.status(400).json({ errors: errors.array() })
     }
+    try{
+        const userId = req.user.id;
+        //console.log(userId)
+        // Extract bookingId from request parameters
+        const {id}= req.params;
+        console.log('userId:',userId);
+        console.log('bookingId:',id)
 
-       const body = _.pick(req.body, ['bookingId','caretakerId','userId', 'serviceName']);
-//console.log(body)
-    try {
-        // Fetch the booking to get careTakerId
-        const booking = await Booking.findById(body.bookingId).populate('caretakerId');
+        // Find the booking record
+        const booking = await Booking.findById(id).populate('userId caretakerId petId parentId');
         if (!booking) {
-            return res.status(404).json({ error: 'Booking not found' });
+            return res.status(404).json({ message: 'Booking not found' });
         }
-        console.log('Booking:', booking);
-        // console.log(careTakerId)
+        console.log('booking Details:',booking)
 
-        const careTakerId = booking.caretakerId._id;
-        console.log('CareTaker ID:', careTakerId);
-        const careTaker = await CareTaker.findById(booking.caretakerId);
-        if (!careTaker) {
-            return res.status(404).json({ error: 'CareTaker not found' });
-        }
-        console.log(careTaker)
-        console.log('CareTaker ID:', booking.caretakerId);
+        // Extract necessary data from booking
+        const { caretakerId, petId, parentId, totalAmount, bookingDurationInHours } = booking;
 
-        // Find the service charge for the given serviceName
-        const serviceCharge = careTaker.serviceCharges.find(service => service.specialityName === body.serviceName);
-        if (!serviceCharge) {
-            return res.status(404).json({ error: 'Service charge not found' });
-        }
-
-        const amount = serviceCharge.amount;
-       
         
-
-        // Create a customer
+        //create a customer
         const customer = await stripe.customers.create({
             name: "Testing",
             address: {
@@ -54,42 +43,57 @@ paymentCntrl.pay = async (req, res) => {
                 state: 'AP',
                 country: 'US',
             },
-        });
-
-        // Create a session object
+        }) 
+        
+        //create a session object
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: [{
-                price_data: {
-                    currency: 'inr',
-                    product_data: {
-                        name: 'Pet Buddy'
+            payment_method_types:["card"],
+            line_items:[{
+                price_data:{
+                    currency:'inr',
+                    product_data:{
+                        name:'Pet Buddy'
                     },
-                    unit_amount: amount * 100 
+                    unit_amount:booking.totalAmount * 100
                 },
                 quantity: 1
             }],
-            mode: "payment",
-            success_url: "http://localhost:3000/success",
-            cancel_url: "http://localhost:3000/failure",
-            customer: customer.id
-        });
+            mode:"payment",
+            success_url:"http://localhost:3000/success",
+            cancel_url: 'http://localhost:3000/failure',
+            customer : customer.id
+        })
 
         // Create Payment
         const payment = new Payment({
-            bookingId: body.bookingId,
+            userId,
+            caretakerId,
+            bookingId:id,
             transactionId: session.id,
-            amount: amount, // Use the amount from serviceCharge
-            paymentType: "card"
+            paymentType: "card",
+            amount: totalAmount,
+            paymentStatus: "pending"
         });
-        await payment.save();
 
-        res.json({ id: session.id, url: session.url });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        await payment.save();
+         // Fetch the newly created payment with populated fields
+         const populatedPayment = await Payment.findById(payment._id)
+         .populate('userId caretakerId bookingId parentId')
+         .exec();
+
+     res.json({
+         id: session.id,
+         url: session.url,
+         payment: populatedPayment
+     });
+        
+
+    }catch(err){
+        console.log(err);
+        res.status(500).json({error:'Internal Server Error'})
     }
 }
+
 
 paymentCntrl.successUpdate=async(req,res)=>{
     try{

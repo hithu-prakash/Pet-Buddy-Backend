@@ -12,15 +12,15 @@ petCntrl.create = async (req, res) => {
     //     return res.status(400).json({ errors: errors.array() });
     // }
     try {
+        const userId = req.user.id;
         const body = req.body;
-        body.userId = req.user.id;
-        
+        body.userId = userId;
         // Find the pet parent associated with the user
         const petParent = await Parent.findOne({ userId: req.user.id });
         if (!petParent) {
             return res.status(400).json({ errors: [{ msg: 'Pet Parent profile not found for this user.' }] });
         }
-
+        console.log(petParent)
         // Assign petParentId to the body
         body.petParentId = petParent._id;
 

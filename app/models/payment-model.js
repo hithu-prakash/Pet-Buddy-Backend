@@ -14,6 +14,14 @@ const paymentSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref:"Booking"
    },
+   parentId:{
+    type:Schema.Types.ObjectId,
+    ref:"Parent"
+},
+petId:{
+    type: Schema.Types.ObjectId,
+    ref:"Pet"
+   },
     paymentType: String,
     //amount: Number,
     
