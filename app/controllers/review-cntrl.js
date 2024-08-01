@@ -109,7 +109,7 @@ reviewCntrl.getAll = async (req, res) => {
 reviewCntrl.getByCaretaker = async (req, res) => {
     const { caretakerId } = req.params;
     try {
-        const reviews = await Review.find({ caretakerId })
+        const reviews = await Review.findbyId({ caretakerId })
             .populate('userId', 'username email')
             .populate('caretakerId', 'businessName')
             .populate('bookingId', 'startTime endTime');

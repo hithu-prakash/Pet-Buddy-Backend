@@ -26,7 +26,7 @@ adminCltr.verifyCareTaker = async(req,res)=>{
         if(!caretaker){
             return res.status(404).json({ error: "Caretaker not found" })
         }
-        caretaker.verifiedByAdmin = true;
+        caretaker.isVerified = true;
         await caretaker.save();
         
         res.status(200).json({ message: "Caretaker verified successfully", caretaker })

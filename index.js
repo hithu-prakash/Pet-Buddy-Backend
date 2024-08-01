@@ -60,7 +60,7 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
 //careTaker CRUD
             //upload.single('proof')                                                              //checkSchema(careTakerValidation)
 app.post('/caretaker/create',upload.fields([{name:'photo',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
-app.get('/caretaker/showallcareTaker',careTakerCntrl.showallcareTaker)
+app.get('/caretaker/showallverifiedcareTaker',careTakerCntrl.showallVcareTaker)
 app.get('/careTaker/singlecareTaker/:id',authenticateUser,careTakerCntrl.singlecareTaker)
 app.get('/careTaker/single-care-taker',authenticateUser,careTakerCntrl.careTakerOne)
 app.put('/careTaker/update/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
@@ -83,7 +83,7 @@ app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUs
 app.delete('/pet/delete/:id',petCntrl.delete)
 
 //booking CRUD
-app.post('/booking/create/careTaker/:caretakerId', authenticateUser, authorizeUser(['petParent']), bookingCntrl.create);
+app.post('/booking/careTaker/:caretakerId', authenticateUser, authorizeUser(['petParent']), bookingCntrl.create);
 app.get('/booking/allbooking',bookingCntrl.allBookings)
 app.get('/booking/singlebooking/:id',authenticateUser,bookingCntrl.singleBooking)
 app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)

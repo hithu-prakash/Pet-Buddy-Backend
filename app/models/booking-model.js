@@ -19,7 +19,7 @@ const bookingSchema = new Schema({
     type:Schema.Types.ObjectId,
     ref:"Parent"
    },
-   serviceName: {
+   specialityName: {
     type: String,
     required: true
 },
@@ -41,8 +41,7 @@ const bookingSchema = new Schema({
         type:String,
         default:"pending"
     },
-    totalAmount: Number,
-       
+          
       Accepted:{
          type:Boolean,
           default:false

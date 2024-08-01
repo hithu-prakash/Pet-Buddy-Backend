@@ -15,9 +15,9 @@ bookingCntrl.create = async (req, res) => {
     try {
         const userId = req.user.id;
         const { caretakerId } = req.params;
-        const { serviceName , date } = req.body;
+        const { specialityName , date } = req.body;
 
-        console.log('serviceName :',serviceName);
+        console.log('serviceName :',specialityName);
         console.log('received CareTakerId : ',caretakerId);
 
         // Fetch CareTaker details
@@ -39,7 +39,7 @@ bookingCntrl.create = async (req, res) => {
         }
 
         // Find the service charge based on the serviceName
-        const serviceCharge = caretaker.serviceCharges.find(charge => charge.specialityName === serviceName);
+        const serviceCharge = caretaker.serviceCharges.find(charge => charge.specialityName === specialityName);
         if (!serviceCharge) {
             return res.status(400).json({ errors: 'Invalid service name.' });
         }
@@ -63,7 +63,7 @@ bookingCntrl.create = async (req, res) => {
             parentId: petParent._id,
             date,
             totalAmount: totalAmount,
-            serviceName: serviceName,
+            specialityName: specialityName,
             status:"pending",
             bookingDurationInHours: bookingDurationInHours,
             category

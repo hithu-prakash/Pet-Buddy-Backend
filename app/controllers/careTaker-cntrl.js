@@ -77,19 +77,17 @@ careTakerCntrl.create = async (req, res) => {
 
     
 
-careTakerCntrl.showallcareTaker = async (req, res) => {
+careTakerCntrl.showallVcareTaker = async (req, res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() })
     }
     const body = req.body
     try {
-        const caretaker = await CareTaker.find().populate('userId','username email phoneNumber')
-
-        return res.status(200).json(caretaker)
-    } catch (err) {
-        console.log(err.message)
-        res.status(500).json({ errors: 'something went wrong' })
+        const caretaker = await CareTaker.find({ isVerified: true }).populate('userId','username email phoneNumber')
+        res.status(200).json(caretaker)
+    }catch(err){
+        res.status(500).json({ errors: 'something went wrong'})
     }
 }
 
@@ -101,6 +99,7 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
    // const body = req.body
    const { id } = req.params;
     try{ 
+        
         const caretaker = await CareTaker.findById(id).populate('userId', 'email username phoneNumber');
         // const pet=await CareTaker.findById({userId:req.user.id}).populate('userId','email username phoneNumber')
      if(!caretaker){
