@@ -97,10 +97,10 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
         return res.status(400).json({ errors: errors.array() })
     }
    // const body = req.body
-   const { id } = req.params;
+   //const { id } = req.params;
     try{ 
         
-        const caretaker = await CareTaker.findById(id).populate('userId', 'email username phoneNumber');
+        const caretaker = await CareTaker.findById(req.params.id).populate('userId', 'email username phoneNumber');
         // const pet=await CareTaker.findById({userId:req.user.id}).populate('userId','email username phoneNumber')
      if(!caretaker){
          return res.json({error:'No records found'})
@@ -121,6 +121,7 @@ careTakerCntrl.careTakerOne = async(req,res)=>{
         }
      res.status(200).json(caretaker)
    }catch(err){
+    console.log(err.message)
      res.status(500).json({error:'somthing went wrong'})
    }
 }

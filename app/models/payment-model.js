@@ -23,7 +23,7 @@ petId:{
     ref:"Pet"
    },
     paymentType: String,
-    //amount: Number,
+    amount: Number,
     
     transactionId: {
         type:String,

@@ -2,6 +2,7 @@ const Payment=require('../models/payment-model')
 const Booking =require('../models/booking-model')
 const CareTaker=require('../models/caretaker-model')
 const Parent = require('../models/petparent-model')
+const nodemailer = require('nodemailer')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const { validationResult } = require('express-validator')
 //const nodeMailer=require('../utility/nodeMailer')
@@ -105,6 +106,35 @@ paymentCntrl.successUpdate=async(req,res)=>{
         //const body = pick(req.body,['paymentStatus'])
         const updatedPayment = await Payment.findOneAndUpdate({transactionId:id}, {$set:{paymentStatus:'Successful'}},{new:true})
         const updatedOrder = await Booking.findOneAndUpdate({_id:updatedPayment.bookingId},{$set:{status:'completed'}},{new:true})
+
+        // Extracting email and username for CareTaker and PetParent
+        const careTakerUser = await User.findById(updatedBooking.caretakerId.userId);
+        const petParentUser = await User.findById(updatedBooking.petparentId.userId);
+
+        // Send email to CareTaker
+        await paymentCntrl.sendMail(
+            careTakerUser.email,
+            careTakerUser.username,
+            'Payment Successful',
+            `
+                
+                <p>Payment for the booking has been successfully processed. Maintain good service for good ratings and good earnings.</p>
+                
+            `
+        );
+
+        // Send email to PetParent
+        await paymentCntrl.sendMail(
+            petParentUser.email,
+            petParentUser.username,
+            'Payment Successful',
+            `
+                
+                <p>Your payment has been successfully processed. Your pet is in good hands. Thank you for using PetBuddy.</p>
+                
+            `
+        );
+
         res.json(updatedPayment)
     }catch(err){
         console.log(err)
@@ -117,6 +147,20 @@ paymentCntrl.failedUpdate=async(req,res)=>{
         const id = req.params.id
         const body = _.pick(req.body,['paymentStatus'])
         const updatedPayment = await Payment.findOneAndUpdate({transactionId:id},{$set:{paymentStatus:"Failed"}},{new:true}) 
+         // Extracting email and username for PetParent
+         const petParentUser = await User.findById(updatedPayment.userId);
+
+         // Send email to PetParent
+         await paymentCntrl.sendMail(
+             petParentUser.email,
+             petParentUser.username,
+             'Payment Failed',
+             `
+                
+                 <p>We are sorry, but your payment has failed. Please try again later.</p>
+                 
+             `
+         );
         res.json(updatedPayment)
     }catch(err){
         console.log(err)

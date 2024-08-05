@@ -6,6 +6,10 @@ const parentSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref:"User"
     },
+    bookingId:{
+        type:Schema.Types.ObjectId,
+        ref:"Booking"
+    },
     // username: String,
     // phoneNumber:String,
      parentPhoto:String,

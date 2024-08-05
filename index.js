@@ -61,8 +61,8 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
             //upload.single('proof')                                                              //checkSchema(careTakerValidation)
 app.post('/caretaker/create',upload.fields([{name:'photo',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
 app.get('/caretaker/showallverifiedcareTaker',careTakerCntrl.showallVcareTaker)
-app.get('/careTaker/singlecareTaker/:id',authenticateUser,careTakerCntrl.singlecareTaker)
-app.get('/careTaker/single-care-taker',authenticateUser,careTakerCntrl.careTakerOne)
+app.get('/careTaker/singlecareTaker/:id',careTakerCntrl.singlecareTaker)
+app.get('/careTaker/single-care-taker',careTakerCntrl.careTakerOne)
 app.put('/careTaker/update/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
 app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.delete)
 
@@ -86,9 +86,12 @@ app.delete('/pet/delete/:id',petCntrl.delete)
 app.post('/booking/careTaker/:caretakerId', authenticateUser, authorizeUser(['petParent']), bookingCntrl.create);
 app.get('/booking/allbooking',bookingCntrl.allBookings)
 app.get('/booking/singlebooking/:id',authenticateUser,bookingCntrl.singleBooking)
-app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)
-app.put('/booking/careTaker/:careTakerId/Booking/:bookingId',authenticateUser,authorizeUser(['petParent']),bookingCntrl.acceptedByCaretaker)
-app.delete('/booking/delete/:id',bookingCntrl.delete)
+//app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)
+app.put('/booking/accept-caretaker/:id',authenticateUser,bookingCntrl.acceptBooking)
+app.put('/booking/deny-caretaker/:id',authenticateUser,bookingCntrl.denyBooking)
+app.get('/booking/allcaretaker-booking',bookingCntrl.allCareTakerBooking)
+app.get('/booking/booking-history-petparent',authenticateUser,bookingCntrl.parentbooklist)
+
 
 //review CRUD
 app.post('/review/create/booking/:id',upload.single('photos'), authenticateUser, authorizeUser(['petParent']), reviewCntrl.create);
@@ -97,18 +100,18 @@ app.get('/single/review/careTaker/:caretakerId',
     authenticateUser, 
     authorizeUser(['petParent']), 
     reviewCntrl.getByCaretaker);
-app.put('/update/review',authenticateUser,authorizeUser(['petParent']),reviewCntrl.update)
+//app.put('/update/review',authenticateUser,authorizeUser(['petParent']),reviewCntrl.update)
 app.delete('/delete/review',reviewCntrl.delete)
 
 //payment 
 app.post('/payment/pay/booking/:id',authenticateUser,authorizeUser(['petParent']),paymentCntrl.pay)
-app.put('/payment/success/:id',paymentCntrl.successUpdate)
-app.put('/payment/failed/:id',paymentCntrl.failedUpdate)
+//app.put('/payment/success/:id',paymentCntrl.successUpdate)
+//app.put('/payment/failed/:id',paymentCntrl.failedUpdate)
 
 //admin
 app.get('/api/admin/caretakers',adminCltr.getAllCareTakers)
 app.get('/api/admin/petparents',adminCltr.getAllPetParents)
-app.put('/api/admin/verify-caretakers/:id',adminCltr.verifyCareTaker)
+//app.put('/api/admin/verify-caretakers/:id',adminCltr.verifyCareTaker)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)
