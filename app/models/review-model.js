@@ -12,6 +12,16 @@ const reviewSchema = new Schema({
         ref: "CareTaker",
         required: true
     },
+    petId:{
+        type:Schema.Types.ObjectId,
+        ref:"Pet",
+        required:true
+    },
+    parentId:{
+        type:Schema.Types.ObjectId,
+        ref:"Parent",
+        required:true
+    },
     bookingId: {
         type: Schema.Types.ObjectId,
         ref: "Booking",

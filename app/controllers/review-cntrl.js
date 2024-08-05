@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const Booking=require('../models/booking-model')
 const _ = require('lodash')
 const CareTaker=require('../models/caretaker-model')
+const Pet=require('../models/pet-model')
 const uploadToCloudinary  = require('../utility/cloudinary')
 
 const reviewCntrl = {};
@@ -92,10 +93,12 @@ reviewCntrl.create = async (req, res) => {
 reviewCntrl.getAll = async (req, res) => {
     try {
         const reviews = await Review.find()
-            .populate('userId', 'username email')
-            .populate('caretakerId', 'name')
-            .populate('bookingId', 'startTime endTime')
-            .sort({ rating: -1 });
+        .populate('userId', 'username email phoneNumber')
+        .populate('caretakerId', 'businessName isVerified address bio photo proof serviceCharges')
+        .populate('petId', 'petName age gender categories breed petPhoto weight vaccinated')
+        .populate('parentId', 'address parentPhoto proof')
+        .populate('bookingId','startTime endTime bookingDurationInHours status totalAmount Accepted')
+        .sort({ rating: -1 })
 
             res.status(201).json(reviews);
       
@@ -109,10 +112,12 @@ reviewCntrl.getAll = async (req, res) => {
 reviewCntrl.getByCaretaker = async (req, res) => {
     const { caretakerId } = req.params;
     try {
-        const reviews = await Review.findbyId({ caretakerId })
-            .populate('userId', 'username email')
-            .populate('caretakerId', 'businessName')
-            .populate('bookingId', 'startTime endTime');
+        const reviews = await Review.find({ caretakerId })
+           .populate('userId', 'username email phoneNumber')
+        .populate('caretakerId', 'businessName isVerified address bio photo proof serviceCharges')
+        .populate('petId', 'petName age gender categories breed petPhoto weight vaccinated')
+        .populate('parentId', 'address parentPhoto proof')
+        .populate('bookingId','startTime endTime bookingDurationInHours status totalAmount Accepted')
 
         res.status(200).json(reviews);
     } catch (err) {
@@ -120,6 +125,8 @@ reviewCntrl.getByCaretaker = async (req, res) => {
         res.status(500).json({ errors: 'Something went wrong' });
     }
 };
+
+module.exports = reviewCntrl;
 
 // Update a review
 // reviewCntrl.update = async (req, res) => {

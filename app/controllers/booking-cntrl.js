@@ -104,7 +104,7 @@ bookingCntrl.create = async (req, res) => {
 };
 
 bookingCntrl.allBookings=async(req,res)=>{
-    const booking = await Booking.find().populate('userId', 'username email phoneNumber').populate('caretakerId', 'businessName verifiedByAdmin address bio photo proof serviceCharges').populate('petId', 'petName age gender category breed petPhoto weigth').populate('parentId', 'userId address photo proof');
+    const booking = await Booking.find().populate('userId', 'username email phoneNumber').populate('caretakerId', 'businessName isVerified address bio photo proof serviceCharges').populate('petId', 'petName age gender category breed petPhoto weigth').populate('parentId', 'userId address photo proof');
       if(booking){
         return res.status(200).json(booking)
       }

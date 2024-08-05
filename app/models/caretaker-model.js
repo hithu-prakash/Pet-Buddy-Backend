@@ -14,6 +14,10 @@ const careTakerSchema = new mongoose.Schema({
     type:Boolean,
     default:false
  }, 
+ caretakerId:{
+    type:Schema.Types.ObjectId,
+    ref:'CareTaker',
+ },
  businessName: String,
 //  phoneNumber:Number,
  address: String, 

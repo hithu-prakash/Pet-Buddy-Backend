@@ -64,23 +64,24 @@ app.get('/caretaker/showallverifiedcareTaker',careTakerCntrl.showallVcareTaker)
 app.get('/careTaker/singlecareTaker/:id',careTakerCntrl.singlecareTaker)
 app.get('/careTaker/single-care-taker',careTakerCntrl.careTakerOne)
 app.put('/careTaker/update/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
-app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.delete)
+app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker','admin']),careTakerCntrl.delete)
 
 
 //petParent CRUD
 
 app.post('/petParent/create',upload.fields([{name:'parentPhoto',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['petParent']),checkSchema(petParentValidation),petParentCntrl.create)
 app.get('/petParent/showall',petParentCntrl.showall)
+app.get('/petParent/single-parent/:id',authenticateUser,petParentCntrl.singlePetParent)
 app.get('/petParent/oneParent',authenticateUser,authorizeUser(['admin','petParent']),petParentCntrl.showone)
 app.put('/petParent/update/:id',upload.fields([{name:'parentPhoto',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['admin','petParent']),checkSchema(petParentUpdateValidation),petParentCntrl.update)
-app.delete('/petParent/delete/:id',petParentCntrl.delete)
+app.delete('/petParent/delete/:id',authenticateUser,authorizeUser(['petParent','admin']),petParentCntrl.delete)
 
 //pet CRUD
 app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
 app.get('/pet/singlePet',authenticateUser,petCntrl.singelPet)
 app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.update)
-app.delete('/pet/delete/:id',petCntrl.delete)
+app.delete('/pet/delete/:id',authenticateUser,authorizeUser(['petParent','admin']),petCntrl.delete)
 
 //booking CRUD
 app.post('/booking/careTaker/:caretakerId', authenticateUser, authorizeUser(['petParent']), bookingCntrl.create);
@@ -89,29 +90,29 @@ app.get('/booking/singlebooking/:id',authenticateUser,bookingCntrl.singleBooking
 //app.put('/booking/update/:id',authenticateUser,authorizeUser(['petParent']),bookingCntrl.update)
 app.put('/booking/accept-caretaker/:id',authenticateUser,bookingCntrl.acceptBooking)
 app.put('/booking/deny-caretaker/:id',authenticateUser,bookingCntrl.denyBooking)
-app.get('/booking/allcaretaker-booking',bookingCntrl.allCareTakerBooking)
+app.get('/booking/allcaretaker-booking',authenticateUser,bookingCntrl.allCareTakerBooking)
 app.get('/booking/booking-history-petparent',authenticateUser,bookingCntrl.parentbooklist)
 
 
 //review CRUD
-app.post('/review/create/booking/:id',upload.single('photos'), authenticateUser, authorizeUser(['petParent']), reviewCntrl.create);
+app.post('/review/create/booking/:bookingId',upload.single('photos'), authenticateUser, authorizeUser(['petParent']), reviewCntrl.create);
 app.get('/all/review',reviewCntrl.getAll)
-app.get('/single/review/careTaker/:caretakerId', 
-    authenticateUser, 
-    authorizeUser(['petParent']), 
+app.get('/single/review/careTaker/:caretakerId', authenticateUser,  authorizeUser(['petParent','careTaker']), 
     reviewCntrl.getByCaretaker);
 //app.put('/update/review',authenticateUser,authorizeUser(['petParent']),reviewCntrl.update)
 app.delete('/delete/review',reviewCntrl.delete)
 
 //payment 
 app.post('/payment/pay/booking/:id',authenticateUser,authorizeUser(['petParent']),paymentCntrl.pay)
-//app.put('/payment/success/:id',paymentCntrl.successUpdate)
-//app.put('/payment/failed/:id',paymentCntrl.failedUpdate)
+app.put('/payment/success/:id',paymentCntrl.successUpdate)
+app.put('/payment/failed/:id',paymentCntrl.failedUpdate)
 
 //admin
 app.get('/api/admin/caretakers',adminCltr.getAllCareTakers)
 app.get('/api/admin/petparents',adminCltr.getAllPetParents)
-//app.put('/api/admin/verify-caretakers/:id',adminCltr.verifyCareTaker)
+app.get('/api/admin/pets',adminCltr.getAllPets)
+app.put('/api/admin/verify-caretakers/:id',adminCltr.verifyCareTaker)
+app.get('/api/admin/counts', adminCltr.getCounts)
 
 app.listen(port,()=>{
     console.log('Port running successfully',port)

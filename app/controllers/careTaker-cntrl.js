@@ -100,8 +100,8 @@ careTakerCntrl.singlecareTaker = async (req, res) => {
    //const { id } = req.params;
     try{ 
         
-        const caretaker = await CareTaker.findById(req.params.id).populate('userId', 'email username phoneNumber');
-        // const pet=await CareTaker.findById({userId:req.user.id}).populate('userId','email username phoneNumber')
+        const caretaker = await CareTaker.findById(req.params.id).populate('userId', 'username email phoneNumber')
+        .populate('caretakerId', 'businessName isVerified address bio photo proof serviceCharges')
      if(!caretaker){
          return res.json({error:'No records found'})
      }

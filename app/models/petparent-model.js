@@ -10,6 +10,7 @@ const parentSchema = new mongoose.Schema({
         type:Schema.Types.ObjectId,
         ref:"Booking"
     },
+    parentId: { type: Schema.Types.ObjectId, ref: 'Parent' },
     // username: String,
     // phoneNumber:String,
      parentPhoto:String,
