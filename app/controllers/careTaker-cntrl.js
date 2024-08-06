@@ -1,6 +1,9 @@
 //const User = require('../models/user-model')
 const { validationResult } = require('express-validator')
 const _ = require('lodash')
+const Booking=require("../models/booking-model")
+const mongoose = require('mongoose');
+const Review= require('../models/review-model')
 const CareTaker = require('../models/caretaker-model')
 const uploadToCloudinary = require('../utility/cloudinary')
 
@@ -78,16 +81,15 @@ careTakerCntrl.create = async (req, res) => {
     
 
 careTakerCntrl.showallVcareTaker = async (req, res) => {
-    const errors = validationResult(req)
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        return res.status(400).json({ errors: errors.array() });
     }
-    const body = req.body
     try {
-        const caretaker = await CareTaker.find({ isVerified: true }).populate('userId','username email phoneNumber')
-        res.status(200).json(caretaker)
-    }catch(err){
-        res.status(500).json({ errors: 'something went wrong'})
+        const caretaker = await CareTaker.find({ isVerified: true }).populate('userId', 'username email phoneNumber');
+        res.status(200).json(caretaker);
+    } catch (err) {
+        res.status(500).json({ errors: 'Something went wrong' });
     }
 }
 
@@ -191,6 +193,40 @@ careTakerCntrl.update = async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ errors: 'Something went wrong' });
+    }
+}
+
+careTakerCntrl.bookingDetails=async(req,res)=>{
+    const { caretakerId } = req.params;
+
+    try {
+        // Convert string ID to ObjectId using Mongoose
+        const ObjectId = mongoose.Types.ObjectId;
+
+        // Ensure the ID is a valid ObjectId
+        if (!ObjectId.isValid(caretakerId)) {
+            return res.status(400).json({ message: 'Invalid caretaker ID' });
+        }
+
+        // Convert caretakerId to ObjectId
+        const caretakerObjectId = new ObjectId(caretakerId);
+
+        // Get total bookings for the caretaker
+        const bookingsCount = await Booking.countDocuments({ caretakerId: caretakerObjectId });
+
+        // Get average rating for the caretaker
+        const reviews = await Review.find({ caretakerId: caretakerObjectId });
+
+        const totalRatings = reviews.reduce((sum, review) => sum + review.ratings, 0);
+        const averageRating = reviews.length ? totalRatings / reviews.length : 0;
+
+        res.json({
+            bookingsCount,
+            averageRating
+        });
+    } catch (error) {
+        console.log('Error fetching caretaker details', error);
+        res.status(500).json({ message: 'Error fetching caretaker details', error });
     }
 }
 

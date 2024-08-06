@@ -67,7 +67,6 @@ petCntrl.create = async (req, res) => {
     }
 };
 
-
 petCntrl.showAll=async(req,res)=>{
     const errors = validationResult(req)
     if(!errors.isEmpty){
@@ -84,25 +83,40 @@ petCntrl.showAll=async(req,res)=>{
 }
 
 petCntrl.singelPet=async(req,res)=>{
+    try{
+        const pets = await Pet.findById(req.params.id).populate('userId','username email phoneNumber').populate('petParentId','address photo proof');
+        if(!pets){
+            return res.status(404).json({errors:"Pet not found"})
+        }
+        res.status(200).json(pets)
+    }catch(err){
+        console.log(err)
+        res.status(500).json({errors:"Something went wrong"})
+    }
+}
+
+// petCntrl.js
+petCntrl.getPetsByParentId = async (req, res) => {
+    const { petParentId } = req.params; // Extract the id from the request parameters
     try {
-        // Log the user ID to ensure it is being passed correctly
-        console.log('User ID:', req.user.id);
-
-        // Fetch the parent record
-        const pet = await Pet.findOne({ userId: req.user.id }).populate('userId', 'email username phoneNumber');
-
-        // Log the fetched pet parent record for debugging
-        console.log('Fetched Pet Parent:', pet);
-
-        if (!pet) {
-            return res.status(404).json({ error: 'No records found' });
+        if (!petParentId) { // Use id instead of petParentId
+            return res.status(400).json({ message: 'Parent ID is required' });
         }
 
-        res.status(200).json(pet);
-    } catch(err){
-     res.status(500).json({error:'somthing went wrong'})
-   }
+        const pets = await Pet.find({ petParentId: petParentId }); // Query using the correct id
+
+        if (pets.length === 0) {
+            return res.status(404).json({ message: 'No pets found for this parent ID' });
+        }
+
+        res.json(pets);
+    } catch (error) {
+        console.log('Error fetching pets:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 }
+
+
 
 petCntrl.update = async (req, res) => {
     // const errors = validationResult(req);

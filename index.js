@@ -34,6 +34,7 @@ const  fs = require('fs')
 const morgan = require('morgan')
 const path = require('path')
 const helmet=require('helmet')
+
 const paymentCntrl = require('./app/controllers/payment-cntrl')
 
 
@@ -46,6 +47,8 @@ app.use(helmet())
 app.use(cors())
 app.use(express.urlencoded({extended:false}))
 configDB()
+
+
 
 //user CRUD
 app.post('/user/register',checkSchema(userRegistrationValidation), userCntrl.Register)
@@ -60,11 +63,12 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
 //careTaker CRUD
             //upload.single('proof')                                                              //checkSchema(careTakerValidation)
 app.post('/caretaker/create',upload.fields([{name:'photo',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
-app.get('/caretaker/showallverifiedcareTaker',careTakerCntrl.showallVcareTaker)
+app.get('/caretaker/showallverifiedcareTaker', careTakerCntrl.showallVcareTaker);
 app.get('/careTaker/singlecareTaker/:id',careTakerCntrl.singlecareTaker)
 app.get('/careTaker/single-care-taker',careTakerCntrl.careTakerOne)
 app.put('/careTaker/update/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
 app.delete('/careTaker/:id',authenticateUser,authorizeUser(['careTaker','admin']),careTakerCntrl.delete)
+app.get('/CTdetails/:caretakerId', careTakerCntrl.bookingDetails);
 
 
 //petParent CRUD
@@ -79,7 +83,8 @@ app.delete('/petParent/delete/:id',authenticateUser,authorizeUser(['petParent','
 //pet CRUD
 app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
-app.get('/pet/singlePet',authenticateUser,petCntrl.singelPet)
+app.get('/pet/singlePet/:id',petCntrl.singelPet)
+app.get('/pets/by-parent/:petParentId', petCntrl.getPetsByParentId);
 app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.update)
 app.delete('/pet/delete/:id',authenticateUser,authorizeUser(['petParent','admin']),petCntrl.delete)
 
@@ -95,13 +100,15 @@ app.get('/booking/booking-history-petparent',authenticateUser,bookingCntrl.paren
 
 
 //review CRUD
-app.post('/review/create/booking/:bookingId',upload.single('photos'), authenticateUser, authorizeUser(['petParent']), reviewCntrl.create);
+app.post('/review/:bookingId',upload.single('photos'), authenticateUser, authorizeUser(['petParent']), reviewCntrl.create);
 app.get('/all/review',reviewCntrl.getAll)
-app.get('/single/review/careTaker/:caretakerId', authenticateUser,  authorizeUser(['petParent','careTaker']), 
+app.get('/singleReview/:caretakerId', authenticateUser,  authorizeUser(['petParent','careTaker']), 
     reviewCntrl.getByCaretaker);
-//app.put('/update/review',authenticateUser,authorizeUser(['petParent']),reviewCntrl.update)
-app.delete('/delete/review',reviewCntrl.delete)
+app.get('/caretaker-ratings/:caretakerId', reviewCntrl.getCaretakerRatings);
+app.put('/update/:reviewId',upload.single('photos'),authenticateUser,authorizeUser(['petParent','admin']),reviewCntrl.update)
+// app.delete('/delete/review',reviewCntrl.delete)
 
+// app.post('/review/create/booking/:bookingId',upload.single('photos'), authenticateUser, authorizeUser(['petParent']), reviewCntrl.create);
 //payment 
 app.post('/payment/pay/booking/:id',authenticateUser,authorizeUser(['petParent']),paymentCntrl.pay)
 app.put('/payment/success/:id',paymentCntrl.successUpdate)
