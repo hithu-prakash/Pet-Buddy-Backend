@@ -8,7 +8,7 @@ const reviewSchema = new Schema({
         required: true
     },
     caretakerId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "CareTaker",
         required: true
     },

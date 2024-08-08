@@ -95,6 +95,28 @@ petCntrl.singelPet=async(req,res)=>{
     }
 }
 
+petCntrl.singelOne=async(req,res)=>{
+    try {
+        // Log the user ID to ensure it is being passed correctly
+        console.log('User ID:', req.user.id);
+
+        // Fetch the parent record
+        const pet = await Pet.findOne({ userId: req.user.id }).populate('userId', 'email username phoneNumber').populate('petParentId','address photo proof');
+
+        // Log the fetched pet parent record for debugging
+        console.log('Fetched Pet Parent:', pet);
+
+        if (!pet) {
+            return res.status(404).json({ error: 'No records found' });
+        }
+
+        res.status(200).json(pet);
+    } catch(err){
+        console.log(err)
+     res.status(500).json({error:'somthing went wrong'})
+   }
+}
+
 // petCntrl.js
 petCntrl.getPetsByParentId = async (req, res) => {
     const { petParentId } = req.params; // Extract the id from the request parameters

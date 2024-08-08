@@ -120,64 +120,94 @@ petParentCntrl.update = async(req,res)=>{
     if (!errors.isEmpty) {
         return res.status(400).json({ errors: errors.array() })
     }
-    const body = req.body
-    try{const { address,parentPhoto,proof} = req.body
+    // const body = req.body
+    // try{const { address,parentPhoto,proof} = req.body
 
-    const newPetParent = new Parent({
-        userId: req.user.id,
-        address,
-        parentPhoto,
-        proof
-    });
+    // const newPetParent = new Parent({
+    //     userId: req.user.id,
+    //     address,
+    //     parentPhoto,
+    //     proof
+    // });
 
-    // Handle profile photo upload
-    if (req.files && req.files.parentPhoto && req.files.parentPhoto.length > 0) {
-        const photoFile = req.files.parentPhoto[0];
-        console.log('Photo file received:', photoFile);
+    // // Handle profile photo upload
+    // if (req.files && req.files.parentPhoto && req.files.parentPhoto.length > 0) {
+    //     const photoFile = req.files.parentPhoto[0];
+    //     console.log('Photo file received:', photoFile);
         
-        const photoOptions = {
-            folder: 'Pet-Buddy-PetParent/photo',
-            quality: 'auto',
-        };
+    //     const photoOptions = {
+    //         folder: 'Pet-Buddy-PetParent/photo',
+    //         quality: 'auto',
+    //     };
 
-        // Upload profile photo to Cloudinary
-        const photoResult = await uploadToCloudinary(photoFile.buffer, photoOptions);
-        console.log('Upload result:', photoResult);
-        console.log('Uploaded photo:', photoResult.secure_url);
+    //     // Upload profile photo to Cloudinary
+    //     const photoResult = await uploadToCloudinary(photoFile.buffer, photoOptions);
+    //     console.log('Upload result:', photoResult);
+    //     console.log('Uploaded photo:', photoResult.secure_url);
 
-        // Assign Cloudinary URL to neweptparent.photo field
-        newPetParent.parentPhoto = photoResult.secure_url;
-    }
-     // Handle proof image upload
-     if (req.files && req.files.proof && req.files.proof.length > 0) {
-        const proofFile = req.files.proof[0];
-        console.log('Proof file received:', proofFile);
+    //     // Assign Cloudinary URL to neweptparent.photo field
+    //     newPetParent.parentPhoto = photoResult.secure_url;
+    // }
+    //  // Handle proof image upload
+    //  if (req.files && req.files.proof && req.files.proof.length > 0) {
+    //     const proofFile = req.files.proof[0];
+    //     console.log('Proof file received:', proofFile);
 
-        // Check  proof present
-        const proofOptions = {
-            folder: 'Pet-Buddy-PetParent/proof',
-            quality: 'auto',
-        };
-        const proofResult = await uploadToCloudinary(proofFile.buffer, proofOptions);
-        console.log('Uploaded proof:', proofResult.secure_url);
-        newPetParent.proof = proofResult.secure_url;
-    } else {
-        return res.status(400).json({ errors: [{ msg: 'Proof file is required.' }] });
-    }
-    // Save new CareTaker 
-    await newPetParent.save()
+    //     // Check  proof present
+    //     const proofOptions = {
+    //         folder: 'Pet-Buddy-PetParent/proof',
+    //         quality: 'auto',
+    //     };
+    //     const proofResult = await uploadToCloudinary(proofFile.buffer, proofOptions);
+    //     console.log('Uploaded proof:', proofResult.secure_url);
+    //     newPetParent.proof = proofResult.secure_url;
+    // } else {
+    //     return res.status(400).json({ errors: [{ msg: 'Proof file is required.' }] });
+    // }
+    // // Save new CareTaker 
+    // await newPetParent.save()
 
-    const parentPhotoPath = req.files.parentPhoto ? req.files.parentPhoto[0].path : null;
-        const proofPath = req.files.proof ? req.files.proof[0].path : null;
+    // const parentPhotoPath = req.files.parentPhoto ? req.files.parentPhoto[0].path : null;
+    //     const proofPath = req.files.proof ? req.files.proof[0].path : null;
     
-        // const id = req.params.userId
-        const response = await Parent.findByIdAndUpdate(req.params.id, body, { new: true })
-        console.log(response)
+    //     // const id = req.params.userId
+    //     const response = await Parent.findByIdAndUpdate(req.params.id, body, { new: true })
+    //     console.log(response)
         
-        res.status(200).json(response)
-    }catch(err){
-        console.log(err.message)
-        res.status(400).json({errors:errors.array()})
+    //     res.status(200).json(response)
+    // }catch(err){
+    //     console.log(err.message)
+    //     res.status(400).json({errors:errors.array()})
+    // }
+    const { address } = req.body;
+    const updateData = { address };  // Collect the data to update
+
+    try {
+        // Handle profile photo upload
+        if (req.files && req.files.parentPhoto && req.files.parentPhoto.length > 0) {
+            const photoFile = req.files.parentPhoto[0];
+            const photoOptions = { folder: 'Pet-Buddy-PetParent/photo', quality: 'auto' };
+            const photoResult = await uploadToCloudinary(photoFile.buffer, photoOptions);
+            updateData.parentPhoto = photoResult.secure_url;
+        }
+
+        // Handle proof image upload
+        if (req.files && req.files.proof && req.files.proof.length > 0) {
+            const proofFile = req.files.proof[0];
+            const proofOptions = { folder: 'Pet-Buddy-PetParent/proof', quality: 'auto' };
+            const proofResult = await uploadToCloudinary(proofFile.buffer, proofOptions);
+            updateData.proof = proofResult.secure_url;
+        }
+
+        const updatedPetParent = await Parent.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!updatedPetParent) {
+            return res.status(404).json({ errors: [{ msg: 'Pet Parent not found.' }] });
+        }
+
+        res.status(200).json(updatedPetParent);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ errors: [{ msg: 'Server error.' }] });
     }
 }
 

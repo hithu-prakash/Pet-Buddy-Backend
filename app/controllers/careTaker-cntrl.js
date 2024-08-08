@@ -75,23 +75,53 @@ careTakerCntrl.create = async (req, res) => {
         res.status(500).json({ errors: 'something went wrong'})
     }
 };
-    
 
+careTakerCntrl.verifyCaretaker = async (req, res) => {
+    const { caretakerId } = req.params;
+
+  try {
+    // Find the caretaker and update their verification status
+    const updatedCaretaker = await CareTaker.findByIdAndUpdate(
+      caretakerId,
+      { isVerified: true },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedCaretaker) {
+      return res.status(404).json({ message: 'Caretaker not found' });
+    }
+
+    res.status(200).json(updatedCaretaker);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// careTakerCntrl.showone = async(req,res)=>{
+//     try{
+//         const caretaker = await CareTaker.findById(req.params.id).populate('userId','username email phoneNumber')
+//         if(!caretaker){
+//             return res.status(404).json({error:'No records found'})
+//         }
+//         res.status(200).json(caretaker)
+//     }catch(error){
+//         console.log(error)
+//         res.status(500).json({ errors: 'something went wrong'})
+//     }
+// }
 
     
 
 careTakerCntrl.showallVcareTaker = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+       try{
+            const caretaker = await CareTaker.find({ isVerified: true }).populate('userId','username email phoneNumber')
+            res.status(200).json(caretaker)
+        }catch(err){
+            res.status(500).json({ errors: 'something went wrong'})
+        }
     }
-    try {
-        const caretaker = await CareTaker.find({ isVerified: true }).populate('userId', 'username email phoneNumber');
-        res.status(200).json(caretaker);
-    } catch (err) {
-        res.status(500).json({ errors: 'Something went wrong' });
-    }
-}
+
 
 careTakerCntrl.singlecareTaker = async (req, res) => {
     const errors = validationResult(req)

@@ -2,8 +2,10 @@ const Review = require('../models/review-model');
 const { validationResult } = require('express-validator');
 const Booking=require('../models/booking-model')
 const _ = require('lodash')
+const nodemailer = require('nodemailer');
 const CareTaker=require('../models/caretaker-model')
 const Pet=require('../models/pet-model')
+//const { sendMail } = require('./path/to/sendMail');
 const Parent = require('../models/petparent-model')
 const uploadToCloudinary  = require('../utility/cloudinary')
 
@@ -113,6 +115,24 @@ reviewCntrl.getAll = async (req, res) => {
         res.status(500).json({ errors: 'Something went wrong' });
     }
 };
+
+reviewCntrl.getReviewById = async (req, res) => {
+    try {
+      const { reviewId } = req.params;
+      const review = await Review.findById(reviewId).populate('userId', 'username email phoneNumber')
+            .populate('caretakerId', 'businessName isVerified address bio photo proof serviceCharges')
+            .populate('petId', 'petName age gender categories breed petPhoto weight vaccinated')
+            .populate('parentId', 'address parentPhoto proof')
+            .populate('bookingId', 'startTime endTime bookingDurationInHours status totalAmount Accepted');
+
+      if (!review) {
+        return res.status(404).json({ message: 'Review not found' });
+      }
+      res.status(200).json(review);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching review', error });
+    }
+  };
 
 // Retrieve reviews by caretaker ID
 reviewCntrl.getByCaretaker = async (req, res) => {
@@ -232,34 +252,93 @@ reviewCntrl.delete = async (req, res) => {
     }
 };
 
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD
+    }
+});
 
+
+// Controller function to get caretaker ratings
 reviewCntrl.getCaretakerRatings = async (req, res) => {
     try {
-      const { caretakerId } = req.params;
-  
-      // Fetch reviews for the specified caretaker
-      const reviews = await Review.find({ caretakerId });
-  
-      if (reviews.length === 0) {
-        return res.status(404).json({ message: 'No reviews found for this caretaker' });
-      }
-  
-      // Calculate total and average rating
-      const totalRating = reviews.reduce((acc, review) => acc + review.ratings, 0);
-      const averageRating = totalRating / reviews.length;
-  
-      // Ensure the average rating is on a scale of 5
-      const scaledAverageRating = (averageRating / 5).toFixed(1); // Round to one decimal place
-  
-      res.json({
-        totalRating,
-        averageRating: scaledAverageRating,
-        numberOfReviews: reviews.length,
-      });
+        const { caretakerId } = req.params;
+
+        // Fetch reviews for the specified caretaker
+        const reviews = await Review.find({ caretakerId });
+
+        if (reviews.length === 0) {
+            return res.status(404).json({ message: 'No reviews found for this caretaker' });
+        }
+
+        // Calculate total and average rating
+        const totalRating = reviews.reduce((acc, review) => acc + review.ratings, 0);
+        const averageRating = totalRating / reviews.length;
+
+        // Ensure the average rating is on a scale of 5
+        const scaledAverageRating = (averageRating / 5).toFixed(1); // Round to one decimal place
+
+        // Fetch the caretaker details
+        const caretaker = await CareTaker.findById(caretakerId).populate('userId'); // Populate userId to get email
+
+        if (!caretaker) {
+            return res.status(404).json({ message: 'CareTaker not found' });
+        }
+
+        // Prepare the response data
+        const responseData = {
+            totalRating,
+            averageRating: scaledAverageRating,
+            numberOfReviews: reviews.length,
+        };
+
+        // Check if the average rating is below the threshold and include warning information
+        if (averageRating < 1.5) {
+            responseData.showWarning = true;
+        }
+
+        res.json(responseData);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
     }
-  };
+}; 
+
+reviewCntrl.sendWarningEmail = async (req, res) => {
+    try {
+        const { caretakerId } = req.params;
+
+        // Fetch the caretaker details
+        const caretaker = await CareTaker.findById(caretakerId).populate('userId');
+
+        if (!caretaker) {
+            return res.status(404).json({ message: 'CareTaker not found' });
+        }
+
+        // Prepare the warning email content
+        const warningContent = `
+            <h1>Warning: Low Rating</h1>
+            <p>Dear ${caretaker.businessName},</p>
+            <p>Your average rating is below the acceptable threshold of 1.5. Please address the issues to improve your rating.</p>
+            <p>Best regards,<br />Pet-Buddy Admin</p>
+        `;
+
+        // Send the warning email
+        await transporter.sendMail({
+            from: process.env.NODEMAILER_EMAIL,
+            to: caretaker.userId.email,
+            subject: 'Warning: Low Rating',
+            html: warningContent
+        });
+
+        res.json({ message: 'Warning email sent successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 
 module.exports = reviewCntrl;

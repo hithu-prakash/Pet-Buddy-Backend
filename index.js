@@ -64,6 +64,7 @@ app.post('/user/resetPassword',checkSchema(userResetPassword),userCntrl.resetPas
             //upload.single('proof')                                                              //checkSchema(careTakerValidation)
 app.post('/caretaker/create',upload.fields([{name:'photo',maxCount:1},{name:'proof',maxCount:1}]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.create)
 app.get('/caretaker/showallverifiedcareTaker', careTakerCntrl.showallVcareTaker);
+app.put('/api/admin/verify-caretaker/:caretakerId', careTakerCntrl.verifyCaretaker);
 app.get('/careTaker/singlecareTaker/:id',careTakerCntrl.singlecareTaker)
 app.get('/careTaker/single-care-taker',careTakerCntrl.careTakerOne)
 app.put('/careTaker/update/:id', upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'proof', maxCount: 1 }]),authenticateUser,authorizeUser(['careTaker']),careTakerCntrl.update)
@@ -83,6 +84,7 @@ app.delete('/petParent/delete/:id',authenticateUser,authorizeUser(['petParent','
 //pet CRUD
 app.post('/pet/create',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.create) //checkSchema(petValidation)
 app.get('/pet/showAll',petCntrl.showAll)
+app.get('/pet/singelOne',petCntrl.singelOne)
 app.get('/pet/singlePet/:id',petCntrl.singelPet)
 app.get('/pets/by-parent/:petParentId', petCntrl.getPetsByParentId);
 app.put('/pet/update/:id',upload.single('petPhoto'),authenticateUser,authorizeUser(['petParent']),petCntrl.update)
@@ -104,7 +106,10 @@ app.post('/review/:bookingId',upload.single('photos'), authenticateUser, authori
 app.get('/all/review',reviewCntrl.getAll)
 app.get('/singleReview/:caretakerId', authenticateUser,  authorizeUser(['petParent','careTaker']), 
     reviewCntrl.getByCaretaker);
+app.get('/review/:reviewId', authenticateUser, authorizeUser(['petParent', 'careTaker']), reviewCntrl.getReviewById);
+//app.get('/caretaker-ratings/:caretakerId', reviewCntrl.getCaretakerRatings);
 app.get('/caretaker-ratings/:caretakerId', reviewCntrl.getCaretakerRatings);
+app.post('/send-warning/:caretakerId',reviewCntrl.sendWarningEmail);
 app.put('/update/:reviewId',upload.single('photos'),authenticateUser,authorizeUser(['petParent','admin']),reviewCntrl.update)
 // app.delete('/delete/review',reviewCntrl.delete)
 
